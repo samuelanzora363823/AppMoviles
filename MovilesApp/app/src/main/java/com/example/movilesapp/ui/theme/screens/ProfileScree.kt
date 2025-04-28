@@ -27,6 +27,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,32 +40,33 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.rememberNavController
+import com.example.movilesapp.ui.navigation.NavGraph
+import com.example.movilesapp.ui.theme.MovilesAppTheme
 
 @Composable
 fun Profile() {
-    var isDarkMode by remember { mutableStateOf(false) }
+    var isDarkMode by remember { mutableStateOf(true) }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(if (isDarkMode) Color.DarkGray else Color(0xFF1E1E1E)),
+            .background(if (isDarkMode) Color.White else Color.Black),
         contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp)
-                .clip(RoundedCornerShape(40.dp))
-                .background(if (isDarkMode) Color(0xFF333333) else Color.White)
-                .padding(24.dp),
+                .fillMaxSize() // <- usar todo el alto y ancho de la pantalla
+                .padding(horizontal = 16.dp, vertical = 24.dp), // padding opcional si quieres algo de margen
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,
                 contentDescription = "Back",
-                tint = if (isDarkMode) Color.LightGray else Color.Gray,
+                tint = if (isDarkMode) Color.Black else Color.Black,
                 modifier = Modifier
                     .align(Alignment.Start)
                     .size(28.dp)
@@ -101,11 +103,11 @@ fun Profile() {
                 text = "Isaac Cañas",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = if (isDarkMode) Color.White else Color.Black
+                color = if (isDarkMode) Color.Black else Color.White
             )
             Text(
                 text = "test@gmail.com",
-                color = if (isDarkMode) Color.LightGray else Color.Gray
+                color = if (isDarkMode) Color.Black else Color.White
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -144,19 +146,26 @@ fun Profile() {
                 Icon(
                     Icons.Default.DarkMode,
                     contentDescription = "Modo oscuro",
-                    tint = if (isDarkMode) Color.LightGray else Color(0xFF64748B)
+                    tint = if (isDarkMode) Color.Black else Color.White
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = "Modo oscuro",
                     fontSize = 16.sp,
-                    color = if (isDarkMode) Color.LightGray else Color(0xFF64748B)
+                    color = if (isDarkMode) Color.Black else Color.White
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Switch(
                     checked = isDarkMode,
-                    onCheckedChange = { isDarkMode = it }
+                    onCheckedChange = { isDarkMode = it },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = if (isDarkMode) Color.White else Color.Black,
+                        uncheckedThumbColor = if (isDarkMode) Color.Black else Color.White,
+                        checkedTrackColor = Color.Black, // Color de la pista activada
+                        uncheckedTrackColor = Color.Black // Color de la pista desactivada
+                    )
                 )
+
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -165,7 +174,7 @@ fun Profile() {
             Button(
                 onClick = { /* Acción cerrar sesión */ },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isDarkMode) Color(0xFF4B5563) else Color.Black
+                    containerColor = if (isDarkMode) Color.Black else Color.Gray
                 ),
                 shape = RoundedCornerShape(20.dp)
             ) {
@@ -192,21 +201,31 @@ fun ProfileItem(
         Icon(
             icon,
             contentDescription = null,
-            tint = if (isDarkMode) Color.LightGray else Color(0xFF64748B)
+            tint = if (isDarkMode) Color.Black else Color.White
         )
         Spacer(modifier = Modifier.width(12.dp))
         Text(
             text = label,
             fontSize = 16.sp,
-            color = if (isDarkMode) Color.LightGray else Color(0xFF64748B)
+            color = if (isDarkMode) Color.Black else Color.White
         )
         Spacer(modifier = Modifier.weight(1f))
         trailing?.let {
             Icon(
                 it,
                 contentDescription = null,
-                tint = if (isDarkMode) Color.LightGray else Color(0xFF64748B)
+                tint = if (isDarkMode) Color.Black else Color.White
             )
         }
     }
 }
+
+
+@Preview(showBackground = true)
+@Composable
+fun ProfilePreviewLight() {
+    MovilesAppTheme(darkTheme = true) {
+        Profile()
+    }
+}
+
