@@ -10,13 +10,15 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import androidx.navigation.NavController
+import com.example.movilesapp.ui.theme.MovilesAppTheme
 import kotlinx.coroutines.delay
 
+// Versión principal con navegación
 @Composable
 fun SplashScreen(navController: NavController) {
-    // Espera 2 segundos antes de navegar
     LaunchedEffect(Unit) {
         delay(2000)
         navController.navigate("home") {
@@ -24,6 +26,12 @@ fun SplashScreen(navController: NavController) {
         }
     }
 
+    SplashScreenContent()
+}
+
+// Versión reutilizable del contenido visual sin lógica de navegación
+@Composable
+fun SplashScreenContent() {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -33,12 +41,15 @@ fun SplashScreen(navController: NavController) {
                         Color(0xFF0073C5), // azul claro
                         Color(0xFF001B45)  // azul oscuro
                     )
-                ),
-                shape = RoundedCornerShape(40.dp)
+                )
+                // Eliminamos el RoundedCornerShape para evitar recortes
             ),
         contentAlignment = Alignment.Center
     ) {
         Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -60,5 +71,14 @@ fun SplashScreen(navController: NavController) {
                 color = Color.White
             )
         }
+    }
+}
+
+// Vista previa que utiliza solo la UI sin lógica de navegación
+@Preview(showBackground = true)
+@Composable
+fun SplashScreenPreview() {
+    MovilesAppTheme(darkTheme = false) {
+        SplashScreenContent()
     }
 }
