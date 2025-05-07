@@ -28,7 +28,6 @@ enum class AuthScreen {
     PROFILE, LOGIN, REGISTER
 }
 
-// 1. Componente ProfileScreen principal
 @Composable
 fun ProfileScreen(
     authViewModel: AuthViewModel = viewModel(),
@@ -36,23 +35,19 @@ fun ProfileScreen(
     onToggleDarkMode: (Boolean) -> Unit
 ) {
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
-    var currentScreen by remember { mutableStateOf(AuthScreen.PROFILE) }
+    var currentScreen by remember { mutableStateOf(if (isLoggedIn) AuthScreen.PROFILE else AuthScreen.LOGIN) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     when (currentScreen) {
         AuthScreen.PROFILE -> {
-            if (isLoggedIn) {
-                ProfileAuthenticated(
-                    isDarkMode = isDarkMode,
-                    onToggleDarkMode = onToggleDarkMode,
-                    onLogout = { authViewModel.logout() }
-                )
-            } else {
-                ProfileUnauthenticated(
-                    onLoginClick = { currentScreen = AuthScreen.LOGIN },
-                    isDarkMode = isDarkMode
-                )
-            }
+            ProfileAuthenticated(
+                isDarkMode = isDarkMode,
+                onToggleDarkMode = onToggleDarkMode,
+                onLogout = {
+                    authViewModel.logout()
+                    currentScreen = AuthScreen.LOGIN
+                }
+            )
         }
         AuthScreen.LOGIN -> LoginScreen(
             isDarkMode = isDarkMode,
@@ -68,8 +63,7 @@ fun ProfileScreen(
                 )
             },
             onRegisterClick = { currentScreen = AuthScreen.REGISTER },
-            onBackClick = { currentScreen = AuthScreen.PROFILE },
-            errorMessage = errorMessage
+            onBackClick = { /* No hay acción de retroceso porque es la pantalla principal */ }
         )
         AuthScreen.REGISTER -> RegisterScreen(
             isDarkMode = isDarkMode,
@@ -82,11 +76,12 @@ fun ProfileScreen(
                 )
             },
             onLoginClick = { currentScreen = AuthScreen.LOGIN },
-            onBackClick = { currentScreen = AuthScreen.PROFILE }
+            onBackClick = { currentScreen = AuthScreen.LOGIN }
         )
     }
 }
 
+// Resto del código permanece igual...
 // 2. Pantalla de perfil autenticado (TU DISEÑO EXACTO)
 @Composable
 fun ProfileAuthenticated(
