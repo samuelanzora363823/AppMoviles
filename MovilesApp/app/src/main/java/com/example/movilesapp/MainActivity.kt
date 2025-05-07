@@ -9,6 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
@@ -22,10 +25,28 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MovilesAppTheme {
+                // Estado para controlar la visibilidad de la BottomBar
                 val navController = rememberNavController()
+                val showBottomBar = remember { mutableStateOf(false) }
+
+                // Observamos los cambios de ruta
+                LaunchedEffect(navController) {
+                    navController.currentBackStackEntryFlow.collect { backStackEntry ->
+                        // Mostrar BottomBar solo en estas rutas
+                        showBottomBar.value = when (backStackEntry.destination.route) {
+                            "home", "profile" -> true
+                            else -> false
+                        }
+                    }
+                }
+
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    bottomBar = { BottomBar(navController) } // 👈 Aquí agregas la barra
+                    bottomBar = {
+                        if (showBottomBar.value) {
+                            BottomBar(navController)
+                        }
+                    }
                 ) { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding)) {
                         NavGraph(navController = navController)
@@ -35,7 +56,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable
