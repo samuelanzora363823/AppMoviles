@@ -10,7 +10,7 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,6 +20,17 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun HomeScreen(isDarkMode: Boolean) {
+    // Lista de rutas
+    val rutas = listOf("29-A", "29-C", "29-C2", "37-B", "40-A", "40-C")
+
+    // Mapa con estado para cada checkbox
+    val checkboxStates = remember { mutableStateMapOf<String, Boolean>() }
+    rutas.forEach { ruta ->
+        if (checkboxStates[ruta] == null) {
+            checkboxStates[ruta] = false
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -94,16 +105,21 @@ fun HomeScreen(isDarkMode: Boolean) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Lista de rutas
-        val rutas = listOf("29-A", "29-C", "29-C2", "37-B", "40-A", "40-C")
+        // Lista de rutas con checkboxes seleccionables
         rutas.forEach { ruta ->
+            val isChecked = checkboxStates[ruta] ?: false
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 6.dp)
             ) {
-                Checkbox(checked = false, onCheckedChange = {})
+                Checkbox(
+                    checked = isChecked,
+                    onCheckedChange = { checked ->
+                        checkboxStates[ruta] = checked
+                    }
+                )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = ruta,
@@ -132,7 +148,6 @@ fun FilterChip(text: String, isSelected: Boolean = false, isDarkMode: Boolean = 
         )
     }
 }
-
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable

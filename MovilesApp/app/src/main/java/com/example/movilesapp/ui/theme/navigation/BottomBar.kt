@@ -14,7 +14,9 @@ import com.example.movilesapp.ui.navigation.BottomNavItem
 fun BottomBar(navController: NavHostController) {
     val items = listOf(
         BottomNavItem.Home,
+        BottomNavItem.Favorites,
         BottomNavItem.Profile
+
     )
 
     NavigationBar {

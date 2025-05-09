@@ -1,12 +1,11 @@
 package com.example.movilesapp.ui.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.movilesapp.ui.screens.FavoriteRoutesScreen
 import com.example.movilesapp.ui.screens.HomeScreen
 import com.example.movilesapp.ui.screens.ProfileScreen
 import com.example.movilesapp.ui.screens.SplashScreen
@@ -14,11 +13,17 @@ import com.example.movilesapp.ui.theme.MovilesAppTheme
 import com.example.movilesapp.viewmodels.AuthViewModel
 
 @Composable
-fun NavGraph(navController: NavHostController) {
-    val isDarkMode = remember { mutableStateOf(false) }
+fun NavGraph(
+    navController: NavHostController,
+    isDarkMode: Boolean, // Recibimos el parámetro isDarkMode
+    onToggleDarkMode: (Boolean) -> Unit // Recibimos el manejador para actualizar el valor de isDarkMode
+) {
     val authViewModel: AuthViewModel = viewModel()
 
-    MovilesAppTheme(darkTheme = isDarkMode.value) {
+    // Hacer mutable la lista de rutas favoritas
+    val favoriteRoutes = mutableListOf("29-A", "40-C") // Hacemos mutable la lista
+
+    MovilesAppTheme(darkTheme = isDarkMode) {
         NavHost(
             navController = navController,
             startDestination = "splash"
@@ -27,13 +32,19 @@ fun NavGraph(navController: NavHostController) {
                 SplashScreen(navController = navController)
             }
             composable("home") {
-                HomeScreen(isDarkMode = isDarkMode.value)
+                HomeScreen(isDarkMode = isDarkMode)
             }
             composable("profile") {
                 ProfileScreen(
                     authViewModel = authViewModel,
-                    isDarkMode = isDarkMode.value,
-                    onToggleDarkMode = { newValue -> isDarkMode.value = newValue }
+                    isDarkMode = isDarkMode,
+                    onToggleDarkMode = onToggleDarkMode // Pasamos la función para actualizar el valor de isDarkMode
+                )
+            }
+            composable("favorites") {
+                FavoriteRoutesScreen(
+                    favoriteRoutes = favoriteRoutes,  // Ahora es mutable
+                    isDarkMode = isDarkMode
                 )
             }
         }
