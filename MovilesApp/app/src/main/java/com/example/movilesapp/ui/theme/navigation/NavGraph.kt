@@ -1,12 +1,13 @@
 package com.example.movilesapp.ui.navigation
 
+import HomeScreen
+import RouteDetailScreen
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.movilesapp.ui.screens.FavoriteRoutesScreen
-import com.example.movilesapp.ui.screens.HomeScreen
 import com.example.movilesapp.ui.screens.ProfileScreen
 import com.example.movilesapp.ui.screens.SplashScreen
 import com.example.movilesapp.ui.theme.MovilesAppTheme
@@ -32,7 +33,7 @@ fun NavGraph(
                 SplashScreen(navController = navController)
             }
             composable("home") {
-                HomeScreen(isDarkMode = isDarkMode)
+                HomeScreen(isDarkMode = isDarkMode, navController = navController) // Pasa navController
             }
             composable("profile") {
                 ProfileScreen(
@@ -47,6 +48,14 @@ fun NavGraph(
                     isDarkMode = isDarkMode
                 )
             }
+            composable("routeDetail/{routeName}") { backStackEntry ->
+                val routeName = backStackEntry.arguments?.getString("routeName") ?: ""
+                RouteDetailScreen(
+                    routeName = routeName,
+                    onBackClick = { navController.popBackStack() } // Función para regresar
+                )
+            }
         }
     }
 }
+
