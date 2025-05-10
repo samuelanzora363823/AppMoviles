@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -26,10 +27,10 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val showBottomBar = remember { mutableStateOf(true) }
 
-                // Estado del modo oscuro
-                val isDarkMode = remember { mutableStateOf(false) }
+                // Detectar modo del sistema
+                val systemDarkMode = isSystemInDarkTheme()
+                val isDarkMode = remember { mutableStateOf(systemDarkMode) }
 
-                // Observa la ruta actual para mostrar u ocultar BottomBar
                 LaunchedEffect(navController) {
                     navController.currentBackStackEntryFlow.collect { backStackEntry ->
                         showBottomBar.value = when (backStackEntry.destination.route) {
@@ -48,7 +49,6 @@ class MainActivity : ComponentActivity() {
                     }
                 ) { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding)) {
-                        // Aquí pasamos el estado de isDarkMode y la función para modificarlo
                         NavGraph(
                             navController = navController,
                             isDarkMode = isDarkMode.value,
