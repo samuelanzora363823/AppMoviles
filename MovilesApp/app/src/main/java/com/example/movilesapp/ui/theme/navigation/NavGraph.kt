@@ -52,10 +52,13 @@ fun NavGraph(
                 val routeName = backStackEntry.arguments?.getString("routeName") ?: ""
                 RouteDetailScreen(
                     routeName = routeName,
-                    onBackClick = { navController.popBackStack() } // Función para regresar
+                    onBackClick = { navController.popBackStack() },
+                    isDarkMode = isDarkMode // ✅ ahora sí se pasa el parámetro
                 )
+            }
+
             }
         }
     }
-}
+
 
