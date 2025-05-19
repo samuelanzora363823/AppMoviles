@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.movilesapp.ui.components.BottomBar
 import com.example.movilesapp.ui.navigation.NavGraph
@@ -23,9 +25,19 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
+            val navController = rememberNavController() // ✅ ÚNICA instancia
+            val showBottomBar = remember { mutableStateOf(true) }
+
+            val currentRoute by navController.currentBackStackEntryAsState()
+            val isAtRoot = currentRoute?.destination?.route in listOf("home", "favorites", "profile")
+
+            // ✅ Correctamente vinculado al mismo navController
+            BackHandler(enabled = isAtRoot) {
+                finish()
+            }
+
             MovilesAppTheme {
-                val navController = rememberNavController()
-                val showBottomBar = remember { mutableStateOf(true) }
+                // Elimina la duplicación de navController y showBottomBar aquí
 
                 // Detectar modo del sistema
                 val systemDarkMode = isSystemInDarkTheme()
@@ -58,6 +70,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
     }
 }
 

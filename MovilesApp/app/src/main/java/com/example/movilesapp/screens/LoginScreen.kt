@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.Email
@@ -70,11 +69,6 @@ fun LoginScreen(
             onClick = onBackClick,
             modifier = Modifier.align(Alignment.Start)
         ) {
-            Icon(
-                Icons.Default.ArrowBack,
-                contentDescription = "Volver atrás",
-                tint = primaryColor
-            )
         }
 
         Spacer(modifier = Modifier.height(12.dp))

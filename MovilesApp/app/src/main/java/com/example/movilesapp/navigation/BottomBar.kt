@@ -4,7 +4,6 @@ package com.example.movilesapp.ui.components
 import androidx.compose.runtime.getValue
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.movilesapp.ui.navigation.BottomNavItem
@@ -29,15 +28,15 @@ fun BottomBar(navController: NavHostController) {
                 label = { Text(item.label) },
                 selected = currentRoute == item.route,
                 onClick = {
-                    navController.navigate(item.route) {
-                        // Manejo del back stack
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
+                    if (currentRoute != item.route) {
+                        navController.popBackStack(0, inclusive = true) // ✅ limpia TODO el stack
+                        navController.navigate(item.route) {
+                            launchSingleTop = true
                         }
-                        launchSingleTop = true
-                        restoreState = true
                     }
                 }
+
+
             )
         }
     }

@@ -1,14 +1,17 @@
-// AuthViewModel.kt
 package com.example.movilesapp.viewmodels
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.example.movilesapp.data.UserPreferences
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class AuthViewModel : ViewModel() {
+class AuthViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val userPrefs = UserPreferences(application)
+
     private val _isLoggedIn = MutableStateFlow(false)
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
 
@@ -17,12 +20,21 @@ class AuthViewModel : ViewModel() {
         User(email = "test@test.com", password = "test123")
     )
 
+    init {
+        viewModelScope.launch {
+            userPrefs.isLoggedIn.collect { savedStatus ->
+                _isLoggedIn.value = savedStatus
+            }
+        }
+    }
+
     fun login(email: String, password: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
-            kotlinx.coroutines.delay(1000) // Simulación de red
+            delay(1000) // Simulación de red
 
             val user = mockUsers.find { it.email == email && it.password == password }
             if (user != null) {
+                userPrefs.setLoggedIn(true)
                 _isLoggedIn.value = true
                 onSuccess()
             } else {
@@ -32,7 +44,10 @@ class AuthViewModel : ViewModel() {
     }
 
     fun logout() {
-        _isLoggedIn.value = false
+        viewModelScope.launch {
+            userPrefs.setLoggedIn(false)
+            _isLoggedIn.value = false
+        }
     }
 
     data class User(val email: String, val password: String)

@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
@@ -126,7 +127,7 @@ fun RouteDetailScreen(
             Text(
                 text = "- $it",
                 color = secondaryTextColor, // Color del texto
-                style = androidx.compose.ui.text.TextStyle(fontSize = 14.sp)
+                style = TextStyle(fontSize = 14.sp)
             )
         }
 
