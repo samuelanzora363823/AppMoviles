@@ -32,8 +32,9 @@ interface RutasApi {
 }
 
 // --- CLIENTE RETROFIT ---
+//cambia localhost por tu IP para probar
 object RetrofitClient {
-    private const val BASE_URL = "http://192.168.1.15:3000/"
+    private const val BASE_URL = "http://localhost:3000/"
 
     val api: RutasApi by lazy {
         Retrofit.Builder()
