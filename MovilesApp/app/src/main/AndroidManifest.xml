@@ -12,6 +12,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MovilesApp"
         tools:targetApi="31">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyAo8gmdSUtBSK42fqJH_GFr44tNn-8JeM4" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
