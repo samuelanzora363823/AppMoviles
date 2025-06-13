@@ -4,10 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.google.android.gms.ads.MobileAds // ✅ Import necesario
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Scaffold
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.*
@@ -22,24 +21,24 @@ import com.example.movilesapp.ui.theme.MovilesAppTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // ✅ Inicializa AdMob
+        MobileAds.initialize(this)
+
         enableEdgeToEdge()
 
         setContent {
-            val navController = rememberNavController() // ✅ ÚNICA instancia
+            val navController = rememberNavController()
             val showBottomBar = remember { mutableStateOf(true) }
 
             val currentRoute by navController.currentBackStackEntryAsState()
             val isAtRoot = currentRoute?.destination?.route in listOf("home", "favorites", "profile")
 
-            // ✅ Correctamente vinculado al mismo navController
             BackHandler(enabled = isAtRoot) {
                 finish()
             }
 
             MovilesAppTheme {
-                // Elimina la duplicación de navController y showBottomBar aquí
-
-                // Detectar modo del sistema
                 val systemDarkMode = isSystemInDarkTheme()
                 val isDarkMode = remember { mutableStateOf(systemDarkMode) }
 
@@ -56,7 +55,10 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
                         if (showBottomBar.value) {
-                            BottomBar(navController)
+                            Column {
+                                BottomBar(navController = navController)
+                                AdMobBanner(adUnitId = "ca-app-pub-3940256099942544/6300978111") // ✅ Usa ID de prueba en desarrollo
+                            }
                         }
                     }
                 ) { innerPadding ->
@@ -70,7 +72,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
     }
 }
 
