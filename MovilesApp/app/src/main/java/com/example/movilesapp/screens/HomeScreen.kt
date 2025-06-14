@@ -1,3 +1,4 @@
+import android.util.Log
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,118 +18,131 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.material3.*
+import com.example.movilesapp.api.RetrofitClient
+import com.example.movilesapp.models.Ruta
 
 @Composable
 fun HomeScreen(isDarkMode: Boolean, navController: NavHostController) {
-    // Lista de rutas
-    val rutas = listOf("29-A", "29-C", "29-C2", "37-B", "40-A", "40-C")
-
-    // Mapa con estado para cada checkbox
+    val rutasList = remember { mutableStateListOf<Ruta>() }
     val checkboxStates = remember { mutableStateMapOf<String, Boolean>() }
-    rutas.forEach { ruta ->
-        if (checkboxStates[ruta] == null) {
-            checkboxStates[ruta] = false
+    var isLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        try {
+            val rutasFromApi = RetrofitClient.api.obtenerRutas()
+            rutasList.clear()
+            rutasList.addAll(rutasFromApi)
+            rutasFromApi.forEach { ruta ->
+                if (checkboxStates[ruta.Nombre] == null) {
+                    checkboxStates[ruta.Nombre] = false
+                }
+            }
+            isLoading = false
+        } catch (e: Exception) {
+            Log.e("API", "Error cargando rutas: ${e.message}")
+            isLoading = false
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(if (isDarkMode) Color.Black else Color.White)
-            .padding(20.dp)
-    ) {
-        // Saludo
-        Text(
-            text = "Hi👋",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = if (isDarkMode) Color.White else Color.Black
-        )
-        Text(
-            text = "Explora El Salvador",
-            color = if (isDarkMode) Color.Gray else Color.DarkGray
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Barra de búsqueda
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    if (isDarkMode) Color.DarkGray else Color(0xFFF5F5F5),
-                    RoundedCornerShape(12.dp)
-                )
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Buscar rutas",
-                color = Color.Gray,
-                modifier = Modifier.weight(1f)
-            )
-            Icon(
-                imageVector = Icons.Default.FilterList,
-                contentDescription = "Filtro",
-                tint = if (isDarkMode) Color.White else Color.Black
-            )
+    if (isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Título sección
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(if (isDarkMode) Color.Black else Color.White)
+                .padding(20.dp)
         ) {
             Text(
-                text = "Rutas populares",
+                text = "Hi👋",
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = if (isDarkMode) Color.White else Color.Black
             )
             Text(
-                text = "View all",
+                text = "Explora El Salvador",
                 color = if (isDarkMode) Color.Gray else Color.DarkGray
             )
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // Filtros
-        Row {
-            FilterChip(text = "Más vistas", isSelected = true, isDarkMode = isDarkMode)
-            Spacer(modifier = Modifier.width(8.dp))
-            FilterChip(text = "Nearby", isDarkMode = isDarkMode)
-            Spacer(modifier = Modifier.width(8.dp))
-            FilterChip(text = "Latest", isDarkMode = isDarkMode)
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Lista de rutas con checkboxes seleccionables
-        rutas.forEach { ruta ->
-            val isChecked = checkboxStates[ruta] ?: false
             Row(
-                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 6.dp)
-                    .clickable {
-                        // Navegar solo con el routeName
-                        navController.navigate("routeDetail/$ruta")
-                    }
+                    .background(
+                        if (isDarkMode) Color.DarkGray else Color(0xFFF5F5F5),
+                        RoundedCornerShape(12.dp)
+                    )
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Checkbox(
-                    checked = isChecked,
-                    onCheckedChange = { checked ->
-                        checkboxStates[ruta] = checked
-                    }
-                )
-                Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = ruta,
+                    text = "Buscar rutas",
+                    color = Color.Gray,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    imageVector = Icons.Default.FilterList,
+                    contentDescription = "Filtro",
+                    tint = if (isDarkMode) Color.White else Color.Black
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Rutas populares",
+                    fontWeight = FontWeight.Bold,
                     color = if (isDarkMode) Color.White else Color.Black
                 )
+                Text(
+                    text = "View all",
+                    color = if (isDarkMode) Color.Gray else Color.DarkGray
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row {
+                FilterChip(text = "Más vistas", isSelected = true, isDarkMode = isDarkMode)
+                Spacer(modifier = Modifier.width(8.dp))
+                FilterChip(text = "Nearby", isDarkMode = isDarkMode)
+                Spacer(modifier = Modifier.width(8.dp))
+                FilterChip(text = "Latest", isDarkMode = isDarkMode)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            rutasList.forEach { ruta ->
+                val isChecked = checkboxStates[ruta.Nombre] ?: false
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp)
+                        .clickable {
+                            navController.navigate("routeDetail/${ruta.Nombre}")
+                        }
+                ) {
+                    Checkbox(
+                        checked = isChecked,
+                        onCheckedChange = { checked ->
+                            checkboxStates[ruta.Nombre] = checked
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = ruta.Nombre,
+                        color = if (isDarkMode) Color.White else Color.Black
+                    )
+                }
             }
         }
     }
@@ -156,6 +170,6 @@ fun FilterChip(text: String, isSelected: Boolean = false, isDarkMode: Boolean = 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun HomeScreenPreview() {
-    val navController = rememberNavController() // Create the NavController for preview
-    HomeScreen(isDarkMode = false, navController = navController) // Pass it to the composable
+    val navController = rememberNavController()
+    HomeScreen(isDarkMode = false, navController = navController)
 }
