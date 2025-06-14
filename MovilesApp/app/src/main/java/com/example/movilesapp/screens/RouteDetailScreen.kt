@@ -1,3 +1,5 @@
+package com.example.movilesapp.ui.screens
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,43 +14,40 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import com.example.movilesapp.models.Ruta
+import com.example.movilesapp.utils.extraerUrlMapa
+import com.example.movilesapp.viewmodel.RutasViewModel
+import java.net.URLEncoder
+
+
 
 @Composable
 fun RouteDetailScreen(
-    routeName: String,
+    ruta: Ruta,
+    navController: NavHostController,
     onBackClick: () -> Unit,
-    isDarkMode: Boolean // Recibimos el parámetro de isDarkMode
+    isDarkMode: Boolean,
+    viewModel: RutasViewModel
 ) {
-    // Definición de los detalles de la ruta
-    val price = "$25 por persona"
-    val duration = "2 horas"
-    val rating = 4.7f
-    val places = listOf(
-        "Plaza Mayor",
-        "Catedral de la ciudad",
-        "Museo de arte moderno",
-        "Parque central"
-    )
-
-    // Colores para el modo oscuro y claro
     val backgroundColor = if (isDarkMode) Color.Black else Color.White
     val primaryTextColor = if (isDarkMode) Color.White else Color.Black
     val secondaryTextColor = if (isDarkMode) Color.LightGray else Color.DarkGray
     val cardBackgroundColor = if (isDarkMode) Color(0xFF333333) else Color(0xFFF5F5F5)
     val iconTintColor = if (isDarkMode) Color.White else Color.Black
 
+    val urlMapa = extraerUrlMapa(ruta.Mapa) ?: ""
+    val isFavorito = viewModel.isFavorito(ruta)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor) // Establece el color de fondo
+            .background(backgroundColor)
             .padding(20.dp)
     ) {
-        // Fila con los iconos de retroceso y guardar
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -57,22 +56,24 @@ fun RouteDetailScreen(
                 imageVector = Icons.Default.ArrowBack,
                 contentDescription = "Volver",
                 modifier = Modifier.clickable { onBackClick() },
-                tint = iconTintColor // Color del icono
+                tint = iconTintColor
             )
             Icon(
                 imageVector = Icons.Default.BookmarkBorder,
                 contentDescription = "Guardar",
-                tint = iconTintColor // Color del icono
+                tint = if (isFavorito) Color(0xFFFFC107) else iconTintColor,
+                modifier = Modifier.clickable {
+                    viewModel.toggleFavorito(ruta)
+                }
             )
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Icono de ubicación
         Icon(
-            imageVector = Icons.Filled.Place, // Usamos el ícono de ubicación de Material Icons
+            imageVector = Icons.Filled.Place,
             contentDescription = "Ubicación",
-            tint = Color(0xFF2196F3), // Color profesional
+            tint = Color(0xFF2196F3),
             modifier = Modifier
                 .size(100.dp)
                 .align(Alignment.CenterHorizontally)
@@ -80,66 +81,55 @@ fun RouteDetailScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Caja con el nombre de la ruta y el precio
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(cardBackgroundColor, RoundedCornerShape(12.dp)) // Color de fondo adecuado
+                .background(cardBackgroundColor, RoundedCornerShape(12.dp))
                 .padding(16.dp)
         ) {
             Column {
                 Text(
-                    text = routeName,
+                    text = "Ruta: ${ruta.Nombre}",
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    color = primaryTextColor // Color del texto
+                    color = primaryTextColor
                 )
                 Text(
-                    text = "Precio: $price",
-                    color = secondaryTextColor // Color del texto
+                    text = "Precio: $${ruta.CostoPasaje}",
+                    color = secondaryTextColor
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Título para la sección de detalles
         Text(
-            text = "Detalles",
+            text = "Recorrido",
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp,
-            color = primaryTextColor // Color del texto
+            color = primaryTextColor
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Información sobre duración y calificación
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = "Duración: $duration", color = secondaryTextColor) // Color del texto
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(text = "⭐ $rating", color = Color(0xFFFFC107)) // Color amarillo para la calificación
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Lista de lugares
-        places.forEach {
-            Text(
-                text = "- $it",
-                color = secondaryTextColor, // Color del texto
-                style = TextStyle(fontSize = 14.sp)
-            )
-        }
+        Text(
+            text = ruta.Ruta,
+            color = secondaryTextColor
+        )
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // Caja para el botón de "Ver rutas"
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
                 .background(Color.Black, RoundedCornerShape(16.dp))
-                .clickable { /* Acción al hacer clic */ },
+                .clickable {
+                    if (urlMapa.isNotEmpty()) {
+                        val urlEncoded = URLEncoder.encode(urlMapa, "UTF-8")
+                        navController.navigate("mapScreen/$urlEncoded")
+                    }
+                },
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -150,26 +140,11 @@ fun RouteDetailScreen(
             )
         }
     }
+
+    println("URL extraída: $urlMapa")
 }
 
-@Preview(showBackground = true)
-@Composable
-fun RouteDetailScreenPreviewDarkMode() {
-    RouteDetailScreen(
-        routeName = "Ruta 29-A",
-        onBackClick = {},
-        isDarkMode = true // Cambia entre true o false para ver el efecto
-    )
-}
 
-@Preview(showBackground = true)
-@Composable
-fun RouteDetailScreenPreviewLightMode() {
-    RouteDetailScreen(
-        routeName = "Ruta 29-A",
-        onBackClick = {},
-        isDarkMode = false // Cambia entre true o false para ver el efecto
-    )
-}
+
 
 

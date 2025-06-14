@@ -13,7 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 
 
-// true = prueba, flase = deploy
+// true = prueba, false = deploy
 private const val USE_TEST_ADS = true
 
 @Composable
