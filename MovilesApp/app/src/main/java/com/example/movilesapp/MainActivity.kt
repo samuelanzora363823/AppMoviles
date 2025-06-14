@@ -1,10 +1,16 @@
+
+
+
+
+
+
 package com.example.movilesapp
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.google.android.gms.ads.MobileAds // ✅ Import necesario
+import com.google.android.gms.ads.MobileAds // Anuncion
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Scaffold
@@ -22,7 +28,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // ✅ Inicializa AdMob
+        //Inicializa AdMob
         MobileAds.initialize(this)
 
         enableEdgeToEdge()
@@ -51,26 +57,31 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    bottomBar = {
-                        if (showBottomBar.value) {
-                            Column {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    Scaffold(
+                        modifier = Modifier.weight(1f),
+                        bottomBar = {
+                            if (showBottomBar.value) {
                                 BottomBar(navController = navController)
-                                AdMobBanner(adUnitId = "ca-app-pub-3940256099942544/6300978111") // ✅ Usa ID de prueba en desarrollo
                             }
                         }
+                    ) { innerPadding ->
+                        Box(modifier = Modifier.padding(innerPadding)) {
+                            NavGraph(
+                                navController = navController,
+                                isDarkMode = isDarkMode.value,
+                                onToggleDarkMode = { newValue -> isDarkMode.value = newValue }
+                            )
+                        }
                     }
-                ) { innerPadding ->
-                    Box(modifier = Modifier.padding(innerPadding)) {
-                        NavGraph(
-                            navController = navController,
-                            isDarkMode = isDarkMode.value,
-                            onToggleDarkMode = { newValue -> isDarkMode.value = newValue }
-                        )
+
+                    // AdMobBanner
+                    if (showBottomBar.value) {
+                        AdMobBanner(modifier = Modifier.fillMaxWidth())
                     }
                 }
             }
+
         }
     }
 }
@@ -83,3 +94,12 @@ fun AppPreview() {
         NavGraph(navController = navController, isDarkMode = false, onToggleDarkMode = {})
     }
 }
+
+
+
+
+
+
+
+
+
