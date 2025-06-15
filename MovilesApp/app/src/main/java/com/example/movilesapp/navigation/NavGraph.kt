@@ -16,7 +16,7 @@ import com.example.movilesapp.ui.screens.RouteDetailScreen
 import com.example.movilesapp.ui.screens.SplashScreen
 import com.example.movilesapp.ui.theme.MovilesAppTheme
 import com.example.movilesapp.viewmodels.AuthViewModel
-import com.example.movilesapp.viewmodel.RutasViewModel // Asegúrate de importar esto desde el paquete correcto
+import com.example.movilesapp.viewmodel.RutasViewModel
 import java.net.URLDecoder
 
 @Composable
@@ -60,10 +60,19 @@ fun NavGraph(
             }
 
             composable("routeDetail/{routeName}") { backStackEntry ->
-                val routeName = backStackEntry.arguments?.getString("routeName") ?: ""
+                // Decodificamos el parámetro para usar el nombre real
+                val encodedRouteName = backStackEntry.arguments?.getString("routeName") ?: ""
+                val routeName = try {
+                    URLDecoder.decode(encodedRouteName, "UTF-8")
+                } catch (e: Exception) {
+                    encodedRouteName // fallback
+                }
 
+                // Solo cargamos si el nombre no está vacío
                 LaunchedEffect(routeName) {
-                    rutasViewModel.cargarRutaPorNombre(routeName)
+                    if (routeName.isNotEmpty()) {
+                        rutasViewModel.cargarRutaPorNombre(routeName)
+                    }
                 }
 
                 val ruta = rutasViewModel.rutaSeleccionada.collectAsState().value
@@ -74,7 +83,7 @@ fun NavGraph(
                         navController = navController,
                         onBackClick = { navController.popBackStack() },
                         isDarkMode = isDarkMode,
-                        viewModel = rutasViewModel // PASAMOS EL ViewModel AQUÍ TAMBIÉN
+                        viewModel = rutasViewModel
                     )
                 } else {
                     Text("Cargando ruta...")
@@ -83,7 +92,11 @@ fun NavGraph(
 
             composable("mapScreen/{mapUrl}") { backStackEntry ->
                 val urlEncoded = backStackEntry.arguments?.getString("mapUrl") ?: ""
-                val urlMapa = URLDecoder.decode(urlEncoded, "UTF-8")
+                val urlMapa = try {
+                    URLDecoder.decode(urlEncoded, "UTF-8")
+                } catch (e: Exception) {
+                    urlEncoded
+                }
 
                 MapScreen(
                     urlMapa = urlMapa,

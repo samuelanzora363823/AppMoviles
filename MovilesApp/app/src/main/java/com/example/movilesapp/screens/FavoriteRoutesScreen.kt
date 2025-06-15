@@ -2,10 +2,14 @@ package com.example.movilesapp.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.runtime.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -14,8 +18,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.movilesapp.viewmodel.RutasViewModel
 
+
 @Composable
 fun FavoriteRoutesScreen(viewModel: RutasViewModel, isDarkMode: Boolean) {
+    // Usamos snapshotFlow para observar cambios reactivos en la lista
     val favoriteRoutes = viewModel.favoriteRoutes
 
     Column(
@@ -46,7 +52,10 @@ fun FavoriteRoutesScreen(viewModel: RutasViewModel, isDarkMode: Boolean) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
-                    .background(if (isDarkMode) Color.DarkGray else Color.LightGray, shape = MaterialTheme.shapes.small)
+                    .background(
+                        if (isDarkMode) Color.DarkGray else Color.LightGray,
+                        shape = MaterialTheme.shapes.small
+                    )
                     .padding(16.dp)
             ) {
                 IconButton(
