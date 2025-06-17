@@ -1,7 +1,10 @@
+package com.example.movilesapp.screens
+
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
@@ -15,19 +18,24 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.lazy.items
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.movilesapp.viewModel.HomeScreenVM
 
 @Composable
-fun HomeScreen(isDarkMode: Boolean, navController: NavHostController) {
-    // Lista de rutas
-    val rutas = listOf("29-A", "29-C", "29-C2", "37-B", "40-A", "40-C")
-
-    // Mapa con estado para cada checkbox
+fun HomeScreen(
+    isDarkMode: Boolean,
+    navController: NavHostController,
+    viewModel: HomeScreenVM = viewModel()
+) {
+    val rutas by viewModel.rutas.collectAsState()
     val checkboxStates = remember { mutableStateMapOf<String, Boolean>() }
+
     rutas.forEach { ruta ->
-        if (checkboxStates[ruta] == null) {
-            checkboxStates[ruta] = false
+        if (checkboxStates[ruta.nombre] == null) {
+            checkboxStates[ruta.nombre] = false
         }
     }
 
@@ -37,7 +45,6 @@ fun HomeScreen(isDarkMode: Boolean, navController: NavHostController) {
             .background(if (isDarkMode) Color.Black else Color.White)
             .padding(20.dp)
     ) {
-        // Saludo
         Text(
             text = "Hi👋",
             fontSize = 24.sp,
@@ -76,86 +83,64 @@ fun HomeScreen(isDarkMode: Boolean, navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Título sección
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "Rutas populares",
-                fontWeight = FontWeight.Bold,
-                color = if (isDarkMode) Color.White else Color.Black
-            )
-            Text(
-                text = "View all",
-                color = if (isDarkMode) Color.Gray else Color.DarkGray
-            )
-        }
+        Text(
+            text = "Rutas populares",
+            fontWeight = FontWeight.Bold,
+            color = if (isDarkMode) Color.White else Color.Black
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Filtros
-        Row {
-            FilterChip(text = "Más vistas", isSelected = true, isDarkMode = isDarkMode)
-            Spacer(modifier = Modifier.width(8.dp))
-            FilterChip(text = "Nearby", isDarkMode = isDarkMode)
-            Spacer(modifier = Modifier.width(8.dp))
-            FilterChip(text = "Latest", isDarkMode = isDarkMode)
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Lista de rutas con checkboxes seleccionables
-        rutas.forEach { ruta ->
-            val isChecked = checkboxStates[ruta] ?: false
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 6.dp)
-                    .clickable {
-                        // Navegar solo con el routeName
-                        navController.navigate("routeDetail/$ruta")
-                    }
+        if (rutas.isEmpty()) {
+            Text(
+                text = "Cargando rutas...",
+                color = if (isDarkMode) Color.White else Color.Black,
+                modifier = Modifier.padding(20.dp)
+            )
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxSize()
             ) {
-                Checkbox(
-                    checked = isChecked,
-                    onCheckedChange = { checked ->
-                        checkboxStates[ruta] = checked
+                items(rutas) { ruta ->
+                    val isChecked = checkboxStates[ruta.nombre] ?: false
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                if (isDarkMode) Color.DarkGray else Color(0xFFEFEFEF),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .padding(12.dp)
+                            .clickable {
+                                navController.navigate("routeDetail/${ruta.id}")
+                            }
+                    ) {
+                        Checkbox(
+                            checked = isChecked,
+                            onCheckedChange = { checked ->
+                                checkboxStates[ruta.nombre] = checked
+                            }
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = ruta.nombre,
+                            color = if (isDarkMode) Color.White else Color.Black,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = ruta,
-                    color = if (isDarkMode) Color.White else Color.Black
-                )
+                }
             }
         }
     }
 }
 
-@Composable
-fun FilterChip(text: String, isSelected: Boolean = false, isDarkMode: Boolean = false) {
-    Box(
-        modifier = Modifier
-            .background(
-                if (isSelected) Color.White else if (isDarkMode) Color.Gray else Color(0xFFF5F5F5),
-                RoundedCornerShape(16.dp)
-            )
-            .clickable { }
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        Text(
-            text = text,
-            color = if (isSelected) Color.Black else if (isDarkMode) Color.White else Color.Black,
-            fontSize = 12.sp
-        )
-    }
-}
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun HomeScreenPreview() {
-    val navController = rememberNavController() // Create the NavController for preview
-    HomeScreen(isDarkMode = false, navController = navController) // Pass it to the composable
+    val navController = rememberNavController()
+    HomeScreen(isDarkMode = false, navController = navController)
 }

@@ -1,6 +1,6 @@
 package com.example.movilesapp.screens
 
-import android.util.Log
+/*import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,8 +27,8 @@ data class Ruta(
 
 // --- INTERFAZ DE LA API ---
 interface RutasApi {
-    @GET("rutas/1")
-    suspend fun obtenerRuta(): Ruta
+    @GET("rutas")
+    suspend fun obtenerRuta(): List<Ruta>
 }
 
 // --- CLIENTE RETROFIT ---
@@ -211,3 +211,5 @@ fun parseKmlWithStops(kml: String): Triple<List<List<LatLng>>, List<List<LatLng>
 
     return Triple(rutasIda, rutasRegreso, paradas)
 }
+
+*/

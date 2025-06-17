@@ -77,6 +77,7 @@
         implementation("androidx.navigation:navigation-compose:2.7.5")
         implementation(libs.androidx.datastore)
         implementation(libs.androidx.datastore.android)
+        implementation(libs.play.services.ads.api)
 
 
         // Testing

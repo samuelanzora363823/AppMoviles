@@ -1,4 +1,4 @@
-package com.example.movilesapp.ui.screens
+package com.example.movilesapp.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

@@ -1,13 +1,13 @@
 package com.example.movilesapp.ui.navigation
 
-import HomeScreen
 import RouteDetailScreen
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.movilesapp.ui.screens.FavoriteRoutesScreen
+import com.example.movilesapp.screens.FavoriteRoutesScreen
+import com.example.movilesapp.screens.HomeScreen
 import com.example.movilesapp.ui.screens.ProfileScreen
 import com.example.movilesapp.ui.screens.SplashScreen
 import com.example.movilesapp.ui.theme.MovilesAppTheme
