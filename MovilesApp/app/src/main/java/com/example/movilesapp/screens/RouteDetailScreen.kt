@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.movilesapp.screens.KMLMapWithIdaRegresoPolylines
 import com.example.movilesapp.viewModel.RouteDetailScreenVM
 
 
@@ -80,19 +81,6 @@ fun RouteDetailScreen(
                     tint = iconTintColor
                 )
             }
-        }
-
-        // Icono ubicación
-        item {
-            Icon(
-                imageVector = Icons.Filled.Place,
-                contentDescription = "Ubicación",
-                tint = Color(0xFF2196F3),
-                modifier = Modifier
-                    .size(56.dp)
-                    .fillMaxWidth()
-                    .wrapContentWidth(Alignment.CenterHorizontally)
-            )
         }
 
         // Caja con nombre y precio
@@ -155,24 +143,14 @@ fun RouteDetailScreen(
             )
         }
 
-        // Botón ver rutas
         item {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp)
-                    .background(Color.Black, RoundedCornerShape(12.dp))
-                    .clickable {
-                        // Acción para ver el mapa
-                    },
-                contentAlignment = Alignment.Center
+                    .height(240.dp)
+                    .background(if (isDarkMode) Color.DarkGray else Color.LightGray, RoundedCornerShape(12.dp))
             ) {
-                Text(
-                    text = "Ver rutas",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp
-                )
+                KMLMapWithIdaRegresoPolylines(kmlText = ruta.mapa)
             }
         }
     }

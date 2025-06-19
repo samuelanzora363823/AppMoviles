@@ -1,6 +1,6 @@
 package com.example.movilesapp.screens
 
-/*import android.util.Log
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,68 +15,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 
-// --- MODELO DE DATOS ---
-data class Ruta(
-    val Id: Int,
-    val Nombre: String,
-    val Ruta: String,
-    val CostoPasaje: Double,
-    val Favorito: Boolean,
-    val Mapa: String // XML como texto
-)
-
-// --- INTERFAZ DE LA API ---
-interface RutasApi {
-    @GET("rutas")
-    suspend fun obtenerRuta(): List<Ruta>
-}
-
-// --- CLIENTE RETROFIT ---
-//cambia localhost por tu IP para probar
-object RetrofitClient {
-    private const val BASE_URL = "https://sqlserver-restapi.onrender.com/"
-
-    val api: RutasApi by lazy {
-        Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .client(OkHttpClient.Builder().build())
-            .build()
-            .create(RutasApi::class.java)
-    }
-}
-
-// --- COMPOSABLE PRINCIPAL ---
-@Composable
-fun MainScreen(navController: NavController) {
-    val rutaXml = remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(Unit) {
-        try {
-            val ruta = RetrofitClient.api.obtenerRuta()
-            rutaXml.value = ruta.Mapa
-        } catch (e: Exception) {
-            Log.e("API", "Error al obtener ruta: ${e.message}", e)
-        }
-    }
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        Box(modifier = Modifier.weight(1f)) {
-            rutaXml.value?.let {
-                KMLMapWithIdaRegresoPolylines(it)
-            } ?: Text("Cargando mapa...", modifier = Modifier.padding(16.dp))
-        }
-
-        Button(
-            onClick = { navController.navigate("userScreen") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text(text = "Ir a UserScreen")
-        }
-    }
-}
 
 // --- MAPA CON KML PARSEADO ---
 @Composable
@@ -212,4 +150,3 @@ fun parseKmlWithStops(kml: String): Triple<List<List<LatLng>>, List<List<LatLng>
     return Triple(rutasIda, rutasRegreso, paradas)
 }
 
-*/
