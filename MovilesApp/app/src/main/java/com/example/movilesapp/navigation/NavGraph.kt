@@ -28,7 +28,8 @@ fun NavGraph(
         NavHost(
             navController = navController,
             startDestination = "splash"
-        ) {
+        )
+        {
             composable("splash") {
                 SplashScreen(navController = navController)
             }
@@ -48,17 +49,18 @@ fun NavGraph(
                     isDarkMode = isDarkMode
                 )
             }
-            composable("routeDetail/{routeName}") { backStackEntry ->
-                val routeName = backStackEntry.arguments?.getString("routeName") ?: ""
+            composable("routeDetail/{id}") { backStackEntry ->
+                val id = backStackEntry.arguments?.getString("id")?.toIntOrNull() ?: return@composable
                 RouteDetailScreen(
-                    routeName = routeName,
+                    id = id,
                     onBackClick = { navController.popBackStack() },
-                    isDarkMode = isDarkMode // ✅ ahora sí se pasa el parámetro
+                    isDarkMode = isDarkMode
                 )
             }
 
-            }
         }
+
     }
+}
 
 

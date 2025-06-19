@@ -1,175 +1,181 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.movilesapp.viewModel.RouteDetailScreenVM
+
 
 @Composable
 fun RouteDetailScreen(
-    routeName: String,
+    id: Int,
     onBackClick: () -> Unit,
-    isDarkMode: Boolean // Recibimos el parámetro de isDarkMode
+    isDarkMode: Boolean,
+    viewModel: RouteDetailScreenVM = viewModel()
 ) {
-    // Definición de los detalles de la ruta
-    val price = "$25 por persona"
-    val duration = "2 horas"
-    val rating = 4.7f
-    val places = listOf(
-        "Plaza Mayor",
-        "Catedral de la ciudad",
-        "Museo de arte moderno",
-        "Parque central"
-    )
+    val rutaDetalle by viewModel.rutaDetalle
 
-    // Colores para el modo oscuro y claro
+    LaunchedEffect(id) {
+        viewModel.cargarRutaDetalle(id)
+    }
+
+    if (rutaDetalle == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    val ruta = rutaDetalle!!
+
     val backgroundColor = if (isDarkMode) Color.Black else Color.White
     val primaryTextColor = if (isDarkMode) Color.White else Color.Black
     val secondaryTextColor = if (isDarkMode) Color.LightGray else Color.DarkGray
     val cardBackgroundColor = if (isDarkMode) Color(0xFF333333) else Color(0xFFF5F5F5)
     val iconTintColor = if (isDarkMode) Color.White else Color.Black
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor) // Establece el color de fondo
-            .padding(20.dp)
+            .background(backgroundColor)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Fila con los iconos de retroceso y guardar
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Volver",
-                modifier = Modifier.clickable { onBackClick() },
-                tint = iconTintColor // Color del icono
-            )
-            Icon(
-                imageVector = Icons.Default.BookmarkBorder,
-                contentDescription = "Guardar",
-                tint = iconTintColor // Color del icono
-            )
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Icono de ubicación
-        Icon(
-            imageVector = Icons.Filled.Place, // Usamos el ícono de ubicación de Material Icons
-            contentDescription = "Ubicación",
-            tint = Color(0xFF2196F3), // Color profesional
-            modifier = Modifier
-                .size(100.dp)
-                .align(Alignment.CenterHorizontally)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Caja con el nombre de la ruta y el precio
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(cardBackgroundColor, RoundedCornerShape(12.dp)) // Color de fondo adecuado
-                .padding(16.dp)
-        ) {
-            Column {
-                Text(
-                    text = routeName,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = primaryTextColor // Color del texto
+        // Header: íconos
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Volver",
+                    modifier = Modifier.clickable { onBackClick() },
+                    tint = iconTintColor
                 )
-                Text(
-                    text = "Precio: $price",
-                    color = secondaryTextColor // Color del texto
+                Icon(
+                    imageVector = Icons.Default.BookmarkBorder,
+                    contentDescription = "Guardar",
+                    tint = iconTintColor
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Título para la sección de detalles
-        Text(
-            text = "Detalles",
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp,
-            color = primaryTextColor // Color del texto
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Información sobre duración y calificación
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = "Duración: $duration", color = secondaryTextColor) // Color del texto
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(text = "⭐ $rating", color = Color(0xFFFFC107)) // Color amarillo para la calificación
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Lista de lugares
-        places.forEach {
-            Text(
-                text = "- $it",
-                color = secondaryTextColor, // Color del texto
-                style = TextStyle(fontSize = 14.sp)
+        // Icono ubicación
+        item {
+            Icon(
+                imageVector = Icons.Filled.Place,
+                contentDescription = "Ubicación",
+                tint = Color(0xFF2196F3),
+                modifier = Modifier
+                    .size(56.dp)
+                    .fillMaxWidth()
+                    .wrapContentWidth(Alignment.CenterHorizontally)
             )
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        // Caja con nombre y precio
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(cardBackgroundColor, RoundedCornerShape(12.dp))
+                    .padding(12.dp)
+            ) {
+                Column {
+                    Text(
+                        text = ruta.nombre,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = primaryTextColor
+                    )
+                    Text(
+                        text = "Precio: $${ruta.costoPasaje}",
+                        color = secondaryTextColor
+                    )
+                }
+            }
+        }
 
-        // Caja para el botón de "Ver rutas"
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
-                .background(Color.Black, RoundedCornerShape(16.dp))
-                .clickable { /* Acción al hacer clic */ },
-            contentAlignment = Alignment.Center
-        ) {
+        // Detalles título
+        item {
             Text(
-                text = "Ver rutas",
-                color = Color.White,
+                text = "Detalles de la ruta:",
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
+                fontSize = 16.sp,
+                color = primaryTextColor
             )
+        }
+
+        // Detalles info
+        item {
+            Text(
+                text = "Ruta: ${ruta.ruta}",
+                color = secondaryTextColor
+            )
+        }
+
+        // Paradas título
+        item {
+            Text(
+                text = "Paradas:",
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp,
+                color = primaryTextColor
+            )
+        }
+
+        // Lista de paradas
+        items(ruta.paradas) { parada ->
+            Text(
+                text = "- ${parada.nombre}",
+                color = secondaryTextColor,
+                fontSize = 14.sp
+            )
+        }
+
+        // Botón ver rutas
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .background(Color.Black, RoundedCornerShape(12.dp))
+                    .clickable {
+                        // Acción para ver el mapa
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Ver rutas",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp
+                )
+            }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun RouteDetailScreenPreviewDarkMode() {
-    RouteDetailScreen(
-        routeName = "Ruta 29-A",
-        onBackClick = {},
-        isDarkMode = true // Cambia entre true o false para ver el efecto
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun RouteDetailScreenPreviewLightMode() {
-    RouteDetailScreen(
-        routeName = "Ruta 29-A",
-        onBackClick = {},
-        isDarkMode = false // Cambia entre true o false para ver el efecto
-    )
 }
 
 
