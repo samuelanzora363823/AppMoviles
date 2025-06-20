@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(navController) {
                     navController.currentBackStackEntryFlow.collect { backStackEntry ->
                         showBottomBar.value = when (backStackEntry.destination.route) {
-                            "home", "favorites", "profile" -> true
+                            "home", "favorites", "login" -> true
                             else -> false
                         }
                     }

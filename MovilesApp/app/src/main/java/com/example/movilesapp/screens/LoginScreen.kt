@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
 
+
 @Composable
 fun LoginScreen(
     isDarkMode: Boolean,
@@ -99,7 +100,6 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Divisor
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
@@ -169,7 +169,6 @@ fun LoginScreen(
             )
         )
 
-        // Error de login (si ocurre)
         loginError?.let {
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = it, color = Color.Red, fontSize = 12.sp)
@@ -186,7 +185,6 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Botón de login
         Button(
             onClick = {
                 auth.signInWithEmailAndPassword(email, password)
@@ -210,7 +208,6 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Ir a registro
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center

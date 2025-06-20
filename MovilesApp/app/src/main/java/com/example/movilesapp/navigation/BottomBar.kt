@@ -29,7 +29,7 @@ fun BottomBar(navController: NavHostController) {
                 selected = currentRoute == item.route,
                 onClick = {
                     if (currentRoute != item.route) {
-                        navController.popBackStack(0, inclusive = true) // ✅ limpia TODO el stack
+                        navController.popBackStack(0, inclusive = true)
                         navController.navigate(item.route) {
                             launchSingleTop = true
                         }
