@@ -50,6 +50,8 @@ fun RegisterScreen(
     onRegisterSuccess: (String, String, String) -> Unit,
     onLoginClick: () -> Unit,
     onBackClick: () -> Unit,
+    onGoogleSignInClick: () -> Unit,
+    onFacebookSignInClick: () -> Unit,
     errorMessage: String? = null
 ) {
     var name by remember { mutableStateOf("") }
@@ -112,14 +114,12 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Botones sociales implementados directamente
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Botón Facebook
             Button(
-                onClick = { /* Acción Facebook */ },
+                onClick = onFacebookSignInClick,
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -145,9 +145,8 @@ fun RegisterScreen(
                 }
             }
 
-            // Botón Google
             Button(
-                onClick = { /* Acción Google */ },
+                onClick = onGoogleSignInClick,
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -176,7 +175,6 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Divisor "o"
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
@@ -200,7 +198,6 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Campo Nombre con icono
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
@@ -227,7 +224,6 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Campo Email con icono
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -255,7 +251,6 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Campo Contraseña con icono
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -294,7 +289,6 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Botón de Registro
         Button(
             onClick = { onRegisterSuccess(name, email, password) },
             modifier = Modifier
@@ -313,7 +307,6 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Enlace a Login
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center

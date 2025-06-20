@@ -17,15 +17,21 @@ import androidx.navigation.compose.rememberNavController
 import com.example.movilesapp.ui.components.BottomBar
 import com.example.movilesapp.ui.navigation.NavGraph
 import com.example.movilesapp.ui.theme.MovilesAppTheme
+import com.google.firebase.FirebaseApp
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        //firebase
+        FirebaseApp.initializeApp(this)
+
         // ✅ Inicializa AdMob
         MobileAds.initialize(this)
 
         enableEdgeToEdge()
+        FirebaseApp.initializeApp(this)
 
         setContent {
             val navController = rememberNavController()

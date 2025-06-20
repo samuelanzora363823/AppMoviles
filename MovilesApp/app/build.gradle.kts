@@ -1,6 +1,11 @@
     plugins {
         alias(libs.plugins.android.application)
         alias(libs.plugins.kotlin.android)
+
+        // Add the dependency for the Google services Gradle plugin
+        //Firebase
+        id("com.google.gms.google-services")
+
         // Añade el plugin de Compose Compiler (requerido desde Kotlin 2.0)
         id("org.jetbrains.kotlin.plugin.compose")
     }
@@ -52,6 +57,14 @@
     }
 
     dependencies {
+        //Firebase
+        // Import the Firebase BoM
+        implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
+        implementation("com.google.firebase:firebase-auth:22.3.1")
+
+
+
+
         //Dependencias para peticiones y mapas
         implementation("androidx.navigation:navigation-compose:2.5.3")
         implementation("com.squareup.retrofit2:retrofit:2.9.0")
