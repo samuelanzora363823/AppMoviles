@@ -63,7 +63,9 @@
         implementation("com.google.firebase:firebase-auth:22.3.1")
 
 
+        implementation("io.coil-kt:coil-compose:2.2.2")
 
+        implementation("com.google.android.gms:play-services-auth:20.6.0")
 
         //Dependencias para peticiones y mapas
         implementation("androidx.navigation:navigation-compose:2.5.3")

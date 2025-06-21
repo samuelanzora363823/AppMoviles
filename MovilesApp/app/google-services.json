@@ -14,34 +14,13 @@
       },
       "oauth_client": [
         {
-          "client_id": "583794477347-vk5rvmf02s51qsdj96lqfsv7n4qk76rc.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBFZeF0D8vy1vRjHj6kSE-Cl6NaXz98LIc"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "583794477347-vk5rvmf02s51qsdj96lqfsv7n4qk76rc.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:583794477347:android:4b1483127b55e76a366496",
-        "android_client_info": {
-          "package_name": "com.moviles.app"
-        }
-      },
-      "oauth_client": [
+          "client_id": "583794477347-2v2flcvn4tfphofdmokoin4q7il3ull0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.movilesapp",
+            "certificate_hash": "3d5ba1a76af563a67f83b2a10c1ac6afb028ef3a"
+          }
+        },
         {
           "client_id": "583794477347-vk5rvmf02s51qsdj96lqfsv7n4qk76rc.apps.googleusercontent.com",
           "client_type": 3

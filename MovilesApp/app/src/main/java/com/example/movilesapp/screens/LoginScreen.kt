@@ -1,3 +1,7 @@
+import android.app.Activity
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -6,7 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Facebook
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,12 +22,17 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.movilesapp.viewmodels.AuthViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
-
+import com.google.firebase.auth.GoogleAuthProvider
 
 @Composable
 fun LoginScreen(
     isDarkMode: Boolean,
+    authViewModel: AuthViewModel,
     onLoginSuccess: (String, String) -> Unit,
     onRegisterClick: () -> Unit,
     onBackClick: () -> Unit
@@ -43,6 +51,44 @@ fun LoginScreen(
     val hintColor = if (isDarkMode) Color.LightGray else Color.DarkGray
     val textFieldBg = if (isDarkMode) Color(0xFF1E1E1E) else Color(0xFFF6F8FE)
 
+    // Configurar Google SignIn Client
+    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken("583794477347-vk5rvmf02s51qsdj96lqfsv7n4qk76rc.apps.googleusercontent.com")
+        .requestEmail()
+        .build()
+
+    val googleSignInClient: GoogleSignInClient = GoogleSignIn.getClient(context, gso)
+
+    // Launcher para recibir resultado de Google SignIn
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(Exception::class.java)
+                account?.idToken?.let { idToken ->
+                    val credential = GoogleAuthProvider.getCredential(idToken, null)
+                    authViewModel.loginWithCredential(
+                        credential = credential,
+                        onSuccess = {
+                            val user = auth.currentUser
+                            onLoginSuccess(user?.email ?: "", "")
+                        },
+                        onError = { error ->
+                            loginError = error
+                        }
+                    )
+
+                }
+            } catch (e: Exception) {
+                loginError = e.message ?: "Error al obtener token de Google"
+            }
+        } else {
+            loginError = "Inicio de sesión con Google cancelado"
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -54,7 +100,7 @@ fun LoginScreen(
             onClick = onBackClick,
             modifier = Modifier.align(Alignment.Start)
         ) {
-            // Puedes agregar un ícono aquí si lo deseas
+            // Ícono para volver atrás si quieres
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -78,23 +124,20 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Botones sociales
+        // Solo botón Google (sin Facebook)
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.Center
         ) {
-            SocialLoginButton(
-                icon = Icons.Outlined.Facebook,
-                text = "Facebook",
-                color = Color(0xFF4267B2),
-                modifier = Modifier.weight(1f)
-            )
-
             SocialLoginButton(
                 icon = Icons.Outlined.Email,
                 text = "Google",
                 color = Color(0xFFDB4437),
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                onClick = {
+                    val signInIntent = googleSignInClient.signInIntent
+                    launcher.launch(signInIntent)
+                }
             )
         }
 
@@ -187,14 +230,16 @@ fun LoginScreen(
 
         Button(
             onClick = {
-                auth.signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            onLoginSuccess(email, password)
-                        } else {
-                            loginError = task.exception?.message ?: "Error al iniciar sesión"
-                        }
+                authViewModel.login(
+                    email = email,
+                    password = password,
+                    onSuccess = {
+                        onLoginSuccess(email, password)
+                    },
+                    onError = { error ->
+                        loginError = error
                     }
+                )
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -226,10 +271,11 @@ fun SocialLoginButton(
     text: String,
     color: Color,
     iconTint: Color = Color.White,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
 ) {
     Button(
-        onClick = { /* Acción del botón social */ },
+        onClick = onClick,
         modifier = modifier.height(44.dp),
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(containerColor = color)
