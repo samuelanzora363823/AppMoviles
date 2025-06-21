@@ -1,14 +1,8 @@
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -16,54 +10,87 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Facebook
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.movilesapp.viewmodels.AuthViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 
 @Composable
 fun RegisterScreen(
     isDarkMode: Boolean,
-    onRegisterSuccess: (String, String, String) -> Unit,
+    authViewModel: AuthViewModel,
+    onRegisterSuccess: (String, String) -> Unit,
     onLoginClick: () -> Unit,
     onBackClick: () -> Unit,
-    onGoogleSignInClick: () -> Unit,
-    onFacebookSignInClick: () -> Unit,
-    errorMessage: String? = null
 ) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var registerError by remember { mutableStateOf<String?>(null) }
+
+    val context = LocalContext.current
+    val auth = FirebaseAuth.getInstance()
 
     val backgroundColor = if (isDarkMode) Color.Black else Color.White
     val primaryColor = Color(0xFF3366FF)
     val textColor = if (isDarkMode) Color.White else Color.Black
     val hintColor = if (isDarkMode) Color.LightGray else Color.DarkGray
     val textFieldBg = if (isDarkMode) Color(0xFF1E1E1E) else Color(0xFFF6F8FE)
+
+    // Google SignIn client setup
+    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken("583794477347-vk5rvmf02s51qsdj96lqfsv7n4qk76rc.apps.googleusercontent.com")
+        .requestEmail()
+        .build()
+
+    val googleSignInClient: GoogleSignInClient = GoogleSignIn.getClient(context, gso)
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(Exception::class.java)
+                account?.idToken?.let { idToken ->
+                    val credential = GoogleAuthProvider.getCredential(idToken, null)
+                    authViewModel.loginWithCredential(
+                        credential = credential,
+                        onSuccess = {
+                            val user = auth.currentUser
+                            onRegisterSuccess(user?.email ?: "", "")
+                        },
+                        onError = { error ->
+                            registerError = error
+                        }
+                    )
+                }
+            } catch (e: Exception) {
+                registerError = e.message ?: "Error al obtener token de Google"
+            }
+        } else {
+            registerError = "Registro con Google cancelado"
+        }
+    }
+
+    val isPasswordValid = password.length >= 8
+    val isButtonEnabled = name.trim().isNotBlank() && email.trim().isNotBlank() && isPasswordValid
 
     Column(
         modifier = Modifier
@@ -83,7 +110,7 @@ fun RegisterScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(Modifier.height(12.dp))
 
         Text(
             text = "Crear cuenta",
@@ -92,7 +119,7 @@ fun RegisterScreen(
             style = MaterialTheme.typography.headlineMedium
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(Modifier.height(8.dp))
 
         Text(
             text = "Únete a nuestra comunidad y descubre todas las ventajas",
@@ -102,8 +129,8 @@ fun RegisterScreen(
             lineHeight = 16.sp
         )
 
-        errorMessage?.let {
-            Spacer(modifier = Modifier.height(16.dp))
+        registerError?.let {
+            Spacer(Modifier.height(16.dp))
             Text(
                 text = it,
                 color = Color.Red,
@@ -112,91 +139,46 @@ fun RegisterScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(Modifier.height(24.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.Center
         ) {
             Button(
-                onClick = onFacebookSignInClick,
+                onClick = {
+                    googleSignInClient.signOut().addOnCompleteListener {
+                        val signInIntent = googleSignInClient.signInIntent
+                        launcher.launch(signInIntent)
+                    }
+                },
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF4267B2)
-                )
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDB4437))
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Facebook,
-                        contentDescription = "Facebook",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Facebook",
-                        color = Color.White,
-                        fontSize = 14.sp
-                    )
-                }
-            }
-
-            Button(
-                onClick = onGoogleSignInClick,
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFDB4437)
+                Icon(
+                    imageVector = Icons.Outlined.Email,
+                    contentDescription = "Google",
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
                 )
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Email,
-                        contentDescription = "Google",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Google",
-                        color = Color.White,
-                        fontSize = 14.sp
-                    )
-                }
+                Spacer(Modifier.width(8.dp))
+                Text("Google", color = Color.White, fontSize = 14.sp)
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(Modifier.height(16.dp))
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Divider(
-                modifier = Modifier.weight(1f),
-                thickness = 1.dp,
-                color = Color.LightGray
-            )
-            Text(
-                text = "  o  ",
-                color = hintColor,
-                modifier = Modifier.padding(horizontal = 4.dp)
-            )
-            Divider(
-                modifier = Modifier.weight(1f),
-                thickness = 1.dp,
-                color = Color.LightGray
-            )
+            Divider(modifier = Modifier.weight(1f), thickness = 1.dp, color = Color.LightGray)
+            Text("  o  ", color = hintColor, modifier = Modifier.padding(horizontal = 4.dp))
+            Divider(modifier = Modifier.weight(1f), thickness = 1.dp, color = Color.LightGray)
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(Modifier.height(16.dp))
 
         OutlinedTextField(
             value = name,
@@ -206,11 +188,7 @@ fun RegisterScreen(
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             leadingIcon = {
-                Icon(
-                    imageVector = Icons.Outlined.Person,
-                    contentDescription = "Nombre",
-                    tint = hintColor
-                )
+                Icon(Icons.Outlined.Person, contentDescription = "Nombre", tint = hintColor)
             },
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = textFieldBg,
@@ -222,7 +200,7 @@ fun RegisterScreen(
             )
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(Modifier.height(12.dp))
 
         OutlinedTextField(
             value = email,
@@ -233,11 +211,7 @@ fun RegisterScreen(
             shape = RoundedCornerShape(12.dp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             leadingIcon = {
-                Icon(
-                    imageVector = Icons.Outlined.Email,
-                    contentDescription = "Email",
-                    tint = hintColor
-                )
+                Icon(Icons.Outlined.Email, contentDescription = "Email", tint = hintColor)
             },
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = textFieldBg,
@@ -249,77 +223,84 @@ fun RegisterScreen(
             )
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(Modifier.height(12.dp))
 
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            placeholder = { Text("Contraseña", color = hintColor) },
+            placeholder = { Text("Contraseña (mínimo 8 caracteres)", color = hintColor) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             leadingIcon = {
-                Icon(
-                    imageVector = Icons.Outlined.Lock,
-                    contentDescription = "Contraseña",
-                    tint = hintColor
-                )
+                Icon(Icons.Outlined.Lock, contentDescription = "Contraseña", tint = hintColor)
             },
             trailingIcon = {
                 val icon = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
-                        tint = hintColor
-                    )
+                    Icon(icon, contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña", tint = hintColor)
                 }
             },
+            isError = !isPasswordValid && password.isNotEmpty(),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = textFieldBg,
                 unfocusedContainerColor = textFieldBg,
                 focusedTextColor = textColor,
                 unfocusedTextColor = textColor,
-                focusedIndicatorColor = primaryColor,
-                unfocusedIndicatorColor = hintColor
+                focusedIndicatorColor = if (!isPasswordValid && password.isNotEmpty()) Color.Red else primaryColor,
+                unfocusedIndicatorColor = if (!isPasswordValid && password.isNotEmpty()) Color.Red else hintColor
             )
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        if (!isPasswordValid && password.isNotEmpty()) {
+            Text(
+                text = "La contraseña debe tener al menos 8 caracteres",
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 12.dp, top = 4.dp)
+            )
+        }
+
+        Spacer(Modifier.height(24.dp))
 
         Button(
-            onClick = { onRegisterSuccess(name, email, password) },
+            onClick = {
+                registerError = null
+                authViewModel.register(
+                    name = name.trim(),
+                    email = email.trim(),
+                    password = password,
+                    onSuccess = {
+                        onRegisterSuccess(email.trim(), password)
+                    },
+                    onError = { error ->
+                        registerError = error
+                    }
+                )
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(containerColor = primaryColor),
-            enabled = name.isNotBlank() && email.isNotBlank() && password.length >= 6
+            enabled = isButtonEnabled
         ) {
-            Text(
-                text = "Registrarse",
-                color = Color.White,
-                fontSize = 16.sp
-            )
+            Text("Registrarse", color = Color.White, fontSize = 16.sp)
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(Modifier.height(16.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = "¿Ya tienes una cuenta? ",
-                color = hintColor
-            )
+            Text("¿Ya tienes una cuenta? ", color = hintColor)
             TextButton(onClick = onLoginClick) {
-                Text(
-                    text = "Inicia sesión",
-                    color = primaryColor
-                )
+                Text("Inicia sesión", color = primaryColor)
             }
         }
     }

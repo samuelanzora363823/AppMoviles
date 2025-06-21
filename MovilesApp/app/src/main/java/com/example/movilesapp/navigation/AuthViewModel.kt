@@ -64,4 +64,40 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             _isLoggedIn.value = false
         }
     }
+
+    fun register(
+        name: String,
+        email: String,
+        password: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        auth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // Actualizar el nombre del usuario en el perfil
+                    val user = auth.currentUser
+                    val profileUpdates = com.google.firebase.auth.UserProfileChangeRequest.Builder()
+                        .setDisplayName(name)
+                        .build()
+                    user?.updateProfile(profileUpdates)?.addOnCompleteListener {
+                        viewModelScope.launch {
+                            userPrefs.setLoggedIn(true)
+                            _isLoggedIn.value = true
+                            onSuccess()
+                        }
+                    } ?: run {
+                        // Si no hay usuario, solo llamar onSuccess
+                        viewModelScope.launch {
+                            userPrefs.setLoggedIn(true)
+                            _isLoggedIn.value = true
+                            onSuccess()
+                        }
+                    }
+                } else {
+                    onError(task.exception?.message ?: "Error al registrar usuario")
+                }
+            }
+    }
+
 }

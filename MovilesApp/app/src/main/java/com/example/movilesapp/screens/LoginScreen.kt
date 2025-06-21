@@ -124,7 +124,7 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Solo botón Google (sin Facebook)
+        // Solo botón Google
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
@@ -135,9 +135,12 @@ fun LoginScreen(
                 color = Color(0xFFDB4437),
                 modifier = Modifier.weight(1f),
                 onClick = {
-                    val signInIntent = googleSignInClient.signInIntent
-                    launcher.launch(signInIntent)
+                    googleSignInClient.signOut().addOnCompleteListener {
+                        val signInIntent = googleSignInClient.signInIntent
+                        launcher.launch(signInIntent)
+                    }
                 }
+
             )
         }
 

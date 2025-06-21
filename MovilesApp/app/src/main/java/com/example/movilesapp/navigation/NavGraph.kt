@@ -55,11 +55,11 @@ fun NavGraph(
                 )
             }
 
-
             composable("register") {
                 RegisterScreen(
                     isDarkMode = isDarkMode,
-                    onRegisterSuccess = { _, _, _ ->
+                    authViewModel = authViewModel,   // Pasamos authViewModel aquí
+                    onRegisterSuccess = { email, password ->
                         navController.navigate("profile") {
                             popUpTo("register") { inclusive = true }
                         }
@@ -72,9 +72,6 @@ fun NavGraph(
                     onBackClick = {
                         navController.popBackStack()
                     },
-                    onGoogleSignInClick = {},
-                    onFacebookSignInClick = {},
-                    errorMessage = null
                 )
             }
 
@@ -94,7 +91,6 @@ fun NavGraph(
                 )
             }
 
-            // **Aquí agregamos la pantalla profile**
             composable("profile") {
                 ProfileScreen(
                     authViewModel = authViewModel,
