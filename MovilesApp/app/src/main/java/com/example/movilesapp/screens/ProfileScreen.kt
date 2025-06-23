@@ -86,11 +86,6 @@ fun ProfileScreen(
                         }
                     }
                 }) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Volver",
-                        tint = textColor
-                    )
                 }
             }
 
@@ -161,11 +156,6 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            ProfileDetailItem(
-                icon = Icons.Default.Phone,
-                label = currentUser.phoneNumber ?: "Teléfono no disponible",
-                isDarkMode = isDarkMode
-            )
 
             ProfileDetailItem(
                 icon = Icons.Default.Email,
