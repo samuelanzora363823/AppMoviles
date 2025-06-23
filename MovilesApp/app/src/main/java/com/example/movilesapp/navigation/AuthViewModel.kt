@@ -1,6 +1,7 @@
 package com.example.movilesapp.viewmodels
 
 import android.app.Application
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.movilesapp.data.UserPreferences
@@ -125,4 +126,20 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             userPrefs.setLoggedIn(false)
         }
     }
+
+    private val _favoriteRoutes = mutableStateListOf<String>()
+    val favoriteRoutes: List<String> get() = _favoriteRoutes
+
+    fun toggleFavorite(routeName: String) {
+        if (_favoriteRoutes.contains(routeName)) {
+            _favoriteRoutes.remove(routeName)
+        } else {
+            _favoriteRoutes.add(routeName)
+        }
+    }
+
+    fun isFavorite(routeName: String): Boolean {
+        return _favoriteRoutes.contains(routeName)
+    }
+
 }

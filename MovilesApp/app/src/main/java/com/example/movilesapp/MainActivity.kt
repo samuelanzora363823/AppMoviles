@@ -19,6 +19,7 @@ import com.example.movilesapp.viewmodels.AuthViewModel
 import com.google.android.gms.ads.MobileAds
 import com.google.firebase.FirebaseApp
 
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,6 +60,7 @@ class MainActivity : ComponentActivity() {
                                     navController = navController,
                                     authViewModel = authViewModel
                                 )
+                                AdMobBanner(adUnitId = Constants.BANNER_AD_UNIT_ID)
                             }
                         }
                     }

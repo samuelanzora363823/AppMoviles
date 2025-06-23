@@ -24,8 +24,6 @@ fun NavGraph(
     onToggleDarkMode: (Boolean) -> Unit,
     authViewModel: AuthViewModel
 ) {
-    val favoriteRoutes = mutableListOf("29-A", "40-C")
-
     MovilesAppTheme(darkTheme = isDarkMode) {
         NavHost(
             navController = navController,
@@ -101,25 +99,28 @@ fun NavGraph(
                 )
             }
 
-            composable("favorites") {
-                FavoriteRoutesScreen(
-                    favoriteRoutes = favoriteRoutes,
-                    isDarkMode = isDarkMode
-                )
-            }
-
             composable("routeDetail/{id}") { backStackEntry ->
                 val id = backStackEntry.arguments?.getString("id")?.toIntOrNull() ?: return@composable
                 RouteDetailScreen(
                     id = id,
                     onBackClick = { navController.popBackStack() },
+                    isDarkMode = isDarkMode,
+                    authViewModel = authViewModel
+                )
+            }
+
+            composable("favorites") {
+                FavoriteRoutesScreen(
+                    authViewModel = authViewModel,
                     isDarkMode = isDarkMode
                 )
             }
 
+
+
             composable("profile") {
                 ProfileScreen(
-                    navController = navController, // 🔥 necesario para navegación hacia atrás
+                    navController = navController,
                     authViewModel = authViewModel,
                     isDarkMode = isDarkMode,
                     onToggleDarkMode = onToggleDarkMode,

@@ -5,12 +5,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,10 +17,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.lazy.items
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.example.movilesapp.viewModel.HomeScreenVM
 
 @Composable
@@ -31,12 +28,10 @@ fun HomeScreen(
     viewModel: HomeScreenVM = viewModel()
 ) {
     val rutas by viewModel.rutas.collectAsState()
-    val checkboxStates = remember { mutableStateMapOf<String, Boolean>() }
+    var searchQuery by remember { mutableStateOf("") }
 
-    rutas.forEach { ruta ->
-        if (checkboxStates[ruta.nombre] == null) {
-            checkboxStates[ruta.nombre] = false
-        }
+    val filteredRutas = rutas.filter {
+        it.nombre.contains(searchQuery, ignoreCase = true)
     }
 
     Column(
@@ -58,28 +53,26 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Barra de búsqueda
-        Row(
+        // Barra de búsqueda funcional
+        TextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            placeholder = { Text("Buscar rutas") },
+            singleLine = true,
+            colors = TextFieldDefaults.colors(
+                unfocusedContainerColor = if (isDarkMode) Color.DarkGray else Color(0xFFF5F5F5),
+                focusedContainerColor = if (isDarkMode) Color.DarkGray else Color(0xFFF5F5F5),
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
+                cursorColor = if (isDarkMode) Color.White else Color.Black
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    if (isDarkMode) Color.DarkGray else Color(0xFFF5F5F5),
-                    RoundedCornerShape(12.dp)
+                    color = if (isDarkMode) Color.DarkGray else Color(0xFFF5F5F5),
+                    shape = RoundedCornerShape(12.dp)
                 )
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Buscar rutas",
-                color = Color.Gray,
-                modifier = Modifier.weight(1f)
-            )
-            Icon(
-                imageVector = Icons.Default.FilterList,
-                contentDescription = "Filtro",
-                tint = if (isDarkMode) Color.White else Color.Black
-            )
-        }
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -102,9 +95,7 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(rutas) { ruta ->
-                    val isChecked = checkboxStates[ruta.nombre] ?: false
-
+                items(filteredRutas) { ruta ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
@@ -118,13 +109,6 @@ fun HomeScreen(
                                 navController.navigate("routeDetail/${ruta.id}")
                             }
                     ) {
-                        Checkbox(
-                            checked = isChecked,
-                            onCheckedChange = { checked ->
-                                checkboxStates[ruta.nombre] = checked
-                            }
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = ruta.nombre,
                             color = if (isDarkMode) Color.White else Color.Black,
@@ -135,12 +119,4 @@ fun HomeScreen(
             }
         }
     }
-}
-
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun HomeScreenPreview() {
-    val navController = rememberNavController()
-    HomeScreen(isDarkMode = false, navController = navController)
 }
