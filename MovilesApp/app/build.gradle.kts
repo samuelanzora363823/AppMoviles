@@ -11,7 +11,7 @@
     }
 
     android {
-        namespace = "com.example.movilesapp"
+        namespace = "com.example.MiBusito"
         compileSdk = 34
 
         defaultConfig {
@@ -93,6 +93,7 @@
         implementation(libs.androidx.datastore)
         implementation(libs.androidx.datastore.android)
         implementation(libs.play.services.ads.api)
+        implementation(libs.androidx.vectordrawable)
 
 
         // Testing
