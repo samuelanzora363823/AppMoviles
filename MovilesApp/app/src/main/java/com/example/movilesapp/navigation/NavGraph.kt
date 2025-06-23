@@ -3,14 +3,17 @@ package com.example.movilesapp.ui.navigation
 import LoginScreen
 import RegisterScreen
 import RouteDetailScreen
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.movilesapp.screens.FavoriteRoutesScreen
 import com.example.movilesapp.screens.HomeScreen
 import com.example.movilesapp.ui.screens.ProfileScreen
-import com.example.movilesapp.ui.screens.SplashScreen
 import com.example.movilesapp.ui.theme.MovilesAppTheme
 import com.example.movilesapp.viewmodels.AuthViewModel
 
@@ -21,16 +24,39 @@ fun NavGraph(
     onToggleDarkMode: (Boolean) -> Unit,
     authViewModel: AuthViewModel
 ) {
-
     val favoriteRoutes = mutableListOf("29-A", "40-C")
 
     MovilesAppTheme(darkTheme = isDarkMode) {
         NavHost(
             navController = navController,
-            startDestination = "splash"
+            startDestination = "home"
         ) {
             composable("splash") {
-                SplashScreen(navController = navController)
+                val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+                val alreadyRedirected = remember { mutableStateOf(false) }
+
+                LaunchedEffect(isLoggedIn) {
+                    if (!alreadyRedirected.value) {
+                        alreadyRedirected.value = true
+                        if (isLoggedIn) {
+                            navController.navigate("profile") {
+                                popUpTo("splash") { inclusive = true }
+                            }
+                        } else {
+                            navController.navigate("login") {
+                                popUpTo("splash") { inclusive = true }
+                            }
+                        }
+                    }
+                }
+
+                // Interfaz simple de carga usando Material (NO material3)
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
             }
 
             composable("home") {
@@ -58,8 +84,8 @@ fun NavGraph(
             composable("register") {
                 RegisterScreen(
                     isDarkMode = isDarkMode,
-                    authViewModel = authViewModel,   // Pasamos authViewModel aquí
-                    onRegisterSuccess = { email, password ->
+                    authViewModel = authViewModel,
+                    onRegisterSuccess = { _, _ ->
                         navController.navigate("profile") {
                             popUpTo("register") { inclusive = true }
                         }
@@ -93,12 +119,18 @@ fun NavGraph(
 
             composable("profile") {
                 ProfileScreen(
+                    navController = navController, // 🔥 necesario para navegación hacia atrás
                     authViewModel = authViewModel,
                     isDarkMode = isDarkMode,
                     onToggleDarkMode = onToggleDarkMode,
-                    onNavigateToLogin = { navController.navigate("login") }
+                    onNavigateToLogin = {
+                        navController.navigate("login") {
+                            popUpTo("profile") { inclusive = true }
+                        }
+                    }
                 )
             }
+
         }
     }
 }

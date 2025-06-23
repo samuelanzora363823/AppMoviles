@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
@@ -16,9 +15,9 @@ import androidx.navigation.compose.rememberNavController
 import com.example.movilesapp.ui.components.BottomBar
 import com.example.movilesapp.ui.navigation.NavGraph
 import com.example.movilesapp.ui.theme.MovilesAppTheme
+import com.example.movilesapp.viewmodels.AuthViewModel
 import com.google.android.gms.ads.MobileAds
 import com.google.firebase.FirebaseApp
-import com.example.movilesapp.viewmodels.AuthViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,6 +28,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
+            val authViewModel: AuthViewModel = viewModel()
+            val isDarkMode by authViewModel.isDarkMode.collectAsState()
+
             val navController = rememberNavController()
             val showBottomBar = remember { mutableStateOf(true) }
             val currentRoute by navController.currentBackStackEntryAsState()
@@ -38,15 +40,11 @@ class MainActivity : ComponentActivity() {
                 finish()
             }
 
-            MovilesAppTheme {
-                val systemDarkMode = isSystemInDarkTheme()
-                val isDarkMode = remember { mutableStateOf(systemDarkMode) }
-                val authViewModel: AuthViewModel = viewModel()
-
+            MovilesAppTheme(darkTheme = isDarkMode) {
                 LaunchedEffect(navController) {
                     navController.currentBackStackEntryFlow.collect { backStackEntry ->
                         showBottomBar.value = when (backStackEntry.destination.route) {
-                            "home", "favorites", "login" -> true
+                            "home", "favorites", "profile", "login", "register" -> true
                             else -> false
                         }
                     }
@@ -57,8 +55,10 @@ class MainActivity : ComponentActivity() {
                     bottomBar = {
                         if (showBottomBar.value) {
                             Column {
-                                BottomBar(navController = navController)
-                                // AdMobBanner(adUnitId = "ca-app-pub-3940256099942544/6300978111") // ID de prueba
+                                BottomBar(
+                                    navController = navController,
+                                    authViewModel = authViewModel
+                                )
                             }
                         }
                     }
@@ -66,8 +66,8 @@ class MainActivity : ComponentActivity() {
                     Box(modifier = Modifier.padding(innerPadding)) {
                         NavGraph(
                             navController = navController,
-                            isDarkMode = isDarkMode.value,
-                            onToggleDarkMode = { newValue -> isDarkMode.value = newValue },
+                            isDarkMode = isDarkMode,
+                            onToggleDarkMode = { authViewModel.toggleDarkMode(it) },
                             authViewModel = authViewModel
                         )
                     }

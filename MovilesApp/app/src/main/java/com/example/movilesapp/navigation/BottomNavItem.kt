@@ -13,5 +13,5 @@ sealed class BottomNavItem(
 ) {
     object Home : BottomNavItem("home", Icons.Filled.Home, "Inicio")
     object Favorites : BottomNavItem("favorites", Icons.Filled.Favorite, "Favoritas")
-    object Profile : BottomNavItem("login", Icons.Filled.Person, "Login")
+    object Profile : BottomNavItem("profile", Icons.Filled.Person, "Perfil")
 }

@@ -6,63 +6,87 @@ import androidx.lifecycle.viewModelScope
 import com.example.movilesapp.data.UserPreferences
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
+
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val userPrefs = UserPreferences(application)
     private val auth = FirebaseAuth.getInstance()
+    private val userPrefs = UserPreferences(application)
 
     private val _isLoggedIn = MutableStateFlow(auth.currentUser != null)
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn
 
+    private val _firebaseUser = MutableStateFlow(auth.currentUser)
+    val firebaseUser: StateFlow<FirebaseUser?> = _firebaseUser
+
+    private val _isDarkMode = MutableStateFlow(false)
+    val isDarkMode: StateFlow<Boolean> = _isDarkMode
+
     init {
-        // Sincroniza con preferencias
         viewModelScope.launch {
-            userPrefs.isLoggedIn.collect { savedStatus ->
-                _isLoggedIn.value = auth.currentUser != null && savedStatus
+            userPrefs.isLoggedIn.collect { saved ->
+                _isLoggedIn.value = saved && auth.currentUser != null
+                _firebaseUser.value = auth.currentUser
+            }
+        }
+
+        viewModelScope.launch {
+            userPrefs.isDarkMode.collect { savedDarkMode ->
+                _isDarkMode.value = savedDarkMode
             }
         }
     }
 
-    fun login(email: String, password: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun toggleDarkMode(enabled: Boolean) {
+        _isDarkMode.value = enabled
+        viewModelScope.launch {
+            userPrefs.setDarkMode(enabled)
+        }
+    }
+
+    fun login(
+        email: String,
+        password: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    _isLoggedIn.value = true
+                    _firebaseUser.value = auth.currentUser
                     viewModelScope.launch {
                         userPrefs.setLoggedIn(true)
-                        _isLoggedIn.value = true
-                        onSuccess()
                     }
+                    onSuccess()
                 } else {
                     onError(task.exception?.message ?: "Error al iniciar sesión")
                 }
             }
     }
 
-    fun loginWithCredential(credential: AuthCredential, onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun loginWithCredential(
+        credential: AuthCredential,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
         auth.signInWithCredential(credential)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    _isLoggedIn.value = true
+                    _firebaseUser.value = auth.currentUser
                     viewModelScope.launch {
                         userPrefs.setLoggedIn(true)
-                        _isLoggedIn.value = true
-                        onSuccess()
                     }
+                    onSuccess()
                 } else {
-                    onError(task.exception?.message ?: "Error al iniciar sesión con credencial")
+                    onError(task.exception?.message ?: "Error al iniciar sesión con Google")
                 }
             }
-    }
-
-    fun logout() {
-        auth.signOut()
-        viewModelScope.launch {
-            userPrefs.setLoggedIn(false)
-            _isLoggedIn.value = false
-        }
     }
 
     fun register(
@@ -75,24 +99,17 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Actualizar el nombre del usuario en el perfil
                     val user = auth.currentUser
                     val profileUpdates = com.google.firebase.auth.UserProfileChangeRequest.Builder()
                         .setDisplayName(name)
                         .build()
                     user?.updateProfile(profileUpdates)?.addOnCompleteListener {
+                        _isLoggedIn.value = true
+                        _firebaseUser.value = auth.currentUser
                         viewModelScope.launch {
                             userPrefs.setLoggedIn(true)
-                            _isLoggedIn.value = true
-                            onSuccess()
                         }
-                    } ?: run {
-                        // Si no hay usuario, solo llamar onSuccess
-                        viewModelScope.launch {
-                            userPrefs.setLoggedIn(true)
-                            _isLoggedIn.value = true
-                            onSuccess()
-                        }
+                        onSuccess()
                     }
                 } else {
                     onError(task.exception?.message ?: "Error al registrar usuario")
@@ -100,4 +117,12 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             }
     }
 
+    fun logout() {
+        auth.signOut()
+        _isLoggedIn.value = false
+        _firebaseUser.value = null
+        viewModelScope.launch {
+            userPrefs.setLoggedIn(false)
+        }
+    }
 }

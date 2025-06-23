@@ -4,39 +4,52 @@ package com.example.movilesapp.ui.components
 import androidx.compose.runtime.getValue
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.movilesapp.ui.navigation.BottomNavItem
+import com.example.movilesapp.viewmodels.AuthViewModel
 
 
 @Composable
-fun BottomBar(navController: NavHostController) {
+fun BottomBar(
+    navController: NavHostController,
+    authViewModel: AuthViewModel
+) {
     val items = listOf(
         BottomNavItem.Home,
         BottomNavItem.Favorites,
         BottomNavItem.Profile
-
     )
 
-    NavigationBar {
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
 
+    NavigationBar {
         items.forEach { item ->
+            val selected = when (item.route) {
+                "profile" -> currentRoute == "profile"
+                else -> currentRoute == item.route
+            }
+
             NavigationBarItem(
                 icon = { Icon(item.icon, contentDescription = item.label) },
                 label = { Text(item.label) },
-                selected = currentRoute == item.route,
+                selected = selected,
                 onClick = {
-                    if (currentRoute != item.route) {
+                    val destination = when (item.route) {
+                        "profile" -> if (isLoggedIn) "profile" else "login"
+                        else -> item.route
+                    }
+
+                    if (currentRoute != destination) {
                         navController.popBackStack(0, inclusive = true)
-                        navController.navigate(item.route) {
+                        navController.navigate(destination) {
                             launchSingleTop = true
                         }
                     }
                 }
-
-
             )
         }
     }

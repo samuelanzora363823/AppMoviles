@@ -1,10 +1,12 @@
 package com.example.movilesapp.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
@@ -16,32 +18,48 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.movilesapp.viewmodels.AuthViewModel
-import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun ProfileScreen(
+    navController: NavController,
     authViewModel: AuthViewModel = viewModel(),
     isDarkMode: Boolean,
     onToggleDarkMode: (Boolean) -> Unit,
     onNavigateToLogin: () -> Unit
 ) {
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+    val user by authViewModel.firebaseUser.collectAsState()
+    val hasNavigated = remember { mutableStateOf(false) }
 
     LaunchedEffect(isLoggedIn) {
-        if (!isLoggedIn) {
-            onNavigateToLogin()
+        if (!isLoggedIn && !hasNavigated.value) {
+            hasNavigated.value = true
+            if (navController.currentBackStackEntry?.destination?.route == "profile") {
+                onNavigateToLogin()
+            }
         }
     }
 
-    if (isLoggedIn) {
-        val user = FirebaseAuth.getInstance().currentUser
+    BackHandler(enabled = true) {
+        if (navController.previousBackStackEntry?.destination?.route == "home") {
+            navController.popBackStack()
+        } else {
+            navController.navigate("home") {
+                launchSingleTop = true
+                popUpTo("profile") { inclusive = true }
+            }
+        }
+    }
 
+    val currentUser = user
+    if (isLoggedIn && currentUser != null) {
         val backgroundColor = if (isDarkMode) Color.Black else Color.White
         val textColor = if (isDarkMode) Color.White else Color.Black
         val secondaryTextColor = if (isDarkMode) Color.LightGray else Color.DarkGray
@@ -53,7 +71,29 @@ fun ProfileScreen(
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Avatar
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = {
+                    if (navController.previousBackStackEntry?.destination?.route == "home") {
+                        navController.popBackStack()
+                    } else {
+                        navController.navigate("home") {
+                            popUpTo("profile") { inclusive = true }
+                        }
+                    }
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Volver",
+                        tint = textColor
+                    )
+                }
+            }
+
             Box(
                 modifier = Modifier
                     .size(120.dp)
@@ -61,9 +101,9 @@ fun ProfileScreen(
                     .background(if (isDarkMode) Color.DarkGray else Color.LightGray),
                 contentAlignment = Alignment.Center
             ) {
-                if (user?.photoUrl != null) {
+                if (currentUser.photoUrl != null) {
                     Image(
-                        painter = rememberAsyncImagePainter(user.photoUrl),
+                        painter = rememberAsyncImagePainter(currentUser.photoUrl),
                         contentDescription = "Foto de perfil",
                         modifier = Modifier
                             .size(120.dp)
@@ -82,23 +122,21 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Nombre y correo
             Text(
-                text = user?.displayName ?: "Nombre no disponible",
+                text = currentUser.displayName ?: "Nombre no disponible",
                 color = textColor,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
-                text = user?.email ?: "Correo no disponible",
+                text = currentUser.email ?: "Correo no disponible",
                 color = secondaryTextColor,
                 fontSize = 16.sp
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Switch de modo claro/oscuro
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -123,24 +161,25 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Teléfono y correo como detalle
             ProfileDetailItem(
                 icon = Icons.Default.Phone,
-                label = user?.phoneNumber ?: "Teléfono no disponible",
+                label = currentUser.phoneNumber ?: "Teléfono no disponible",
                 isDarkMode = isDarkMode
             )
 
             ProfileDetailItem(
                 icon = Icons.Default.Email,
-                label = user?.email ?: "Correo no disponible",
+                label = currentUser.email ?: "Correo no disponible",
                 isDarkMode = isDarkMode
             )
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Botón logout
             Button(
-                onClick = { authViewModel.logout() },
+                onClick = {
+                    hasNavigated.value = false
+                    authViewModel.logout()
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
@@ -150,6 +189,10 @@ fun ProfileScreen(
             ) {
                 Text("Cerrar sesión", color = Color.White)
             }
+        }
+    } else {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
         }
     }
 }
