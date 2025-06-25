@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="default_web_client_id" translatable="false">583794477347-vk5rvmf02s51qsdj96lqfsv7n4qk76rc.apps.googleusercontent.com</string>
+    <string name="gcm_defaultSenderId" translatable="false">583794477347</string>
+    <string name="google_api_key" translatable="false">AIzaSyBFZeF0D8vy1vRjHj6kSE-Cl6NaXz98LIc</string>
+    <string name="google_app_id" translatable="false">1:583794477347:android:58ba266cf30c05e5366496</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyBFZeF0D8vy1vRjHj6kSE-Cl6NaXz98LIc</string>
+    <string name="google_storage_bucket" translatable="false">loginmoviles-8f91a.firebasestorage.app</string>
+    <string name="project_id" translatable="false">loginmoviles-8f91a</string>
+</resources>
