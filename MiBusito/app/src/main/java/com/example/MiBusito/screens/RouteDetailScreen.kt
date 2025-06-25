@@ -1,77 +1,87 @@
-    import androidx.compose.foundation.background
-    import androidx.compose.foundation.clickable
-    import androidx.compose.foundation.layout.*
-    import androidx.compose.foundation.lazy.LazyColumn
-    import androidx.compose.foundation.lazy.items
-    import androidx.compose.foundation.shape.RoundedCornerShape
-    import androidx.compose.material.icons.Icons
-    import androidx.compose.material.icons.filled.ArrowBack
-    import androidx.compose.material.icons.filled.BookmarkBorder
-    import androidx.compose.material.icons.filled.Favorite
-    import androidx.compose.material3.CircularProgressIndicator
-    import androidx.compose.material3.Icon
-    import androidx.compose.material3.Text
-    import androidx.compose.runtime.Composable
-    import androidx.compose.runtime.LaunchedEffect
-    import androidx.compose.runtime.getValue
-    import androidx.compose.runtime.mutableStateOf
-    import androidx.compose.runtime.remember
-    import androidx.compose.ui.Alignment
-    import androidx.compose.ui.Modifier
-    import androidx.compose.ui.graphics.Color
-    import androidx.compose.ui.text.font.FontWeight
-    import androidx.compose.ui.unit.dp
-    import androidx.compose.ui.unit.sp
-    import androidx.lifecycle.viewmodel.compose.viewModel
-    import com.example.MiBusito.screens.KMLMapWithIdaRegresoPolylines
-    import com.example.MiBusito.viewModel.RouteDetailScreenVM
-    import com.example.MiBusito.viewmodels.AuthViewModel
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.MiBusito.screens.KMLMapWithIdaRegresoPolylines
+import com.example.MiBusito.viewModel.RouteDetailScreenVM
+import com.example.MiBusito.viewmodels.AuthViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RouteDetailScreen(
+    id: Int,
+    onBackClick: () -> Unit,
+    isDarkMode: Boolean,
+    viewModel: RouteDetailScreenVM = viewModel(),
+    authViewModel: AuthViewModel
+) {
+    val rutaDetalle by viewModel.rutaDetalle
+    val sheetState = rememberBottomSheetScaffoldState()
+    val scope = rememberCoroutineScope()
 
-    @Composable
-    fun RouteDetailScreen(
-        id: Int,
-        onBackClick: () -> Unit,
-        isDarkMode: Boolean,
-        viewModel: RouteDetailScreenVM = viewModel(),
-        authViewModel: AuthViewModel // <- añadido
-    ) {
-        val rutaDetalle by viewModel.rutaDetalle
+    LaunchedEffect(id) {
+        viewModel.cargarRutaDetalle(id)
+    }
 
-        LaunchedEffect(id) {
-            viewModel.cargarRutaDetalle(id)
+    if (rutaDetalle == null) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
         }
+        return
+    }
 
-        if (rutaDetalle == null) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+    val ruta = rutaDetalle!!
+    val isFavorite = remember { mutableStateOf(authViewModel.isFavorite(ruta.nombre)) }
+
+    val backgroundColor = if (isDarkMode) Color.Black else Color.White
+    val primaryTextColor = if (isDarkMode) Color.White else Color.Black
+    val secondaryTextColor = if (isDarkMode) Color.LightGray else Color.DarkGray
+    val iconTintColor = if (isDarkMode) Color.White else Color.Black
+
+    val scrollState = rememberScrollState()
+
+    BottomSheetScaffold(
+        scaffoldState = sheetState,
+        sheetPeekHeight = 120.dp,
+        sheetContainerColor = backgroundColor,
+        sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        sheetContent = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(scrollState)
+                    .padding(16.dp)
             ) {
-                CircularProgressIndicator()
-            }
-            return
-        }
+                // Top handle
+                Box(
+                    Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .size(width = 40.dp, height = 4.dp)
+                        .background(Color.Gray, RoundedCornerShape(2.dp))
+                )
 
-        val ruta = rutaDetalle!!
-        val isFavorite = remember { mutableStateOf(authViewModel.isFavorite(ruta.nombre)) }
+                Spacer(Modifier.height(16.dp))
 
-        val backgroundColor = if (isDarkMode) Color.Black else Color.White
-        val primaryTextColor = if (isDarkMode) Color.White else Color.Black
-        val secondaryTextColor = if (isDarkMode) Color.LightGray else Color.DarkGray
-        val cardBackgroundColor = if (isDarkMode) Color(0xFF333333) else Color(0xFFF5F5F5)
-        val iconTintColor = if (isDarkMode) Color.White else Color.Black
-
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(backgroundColor)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            item {
+                // Header actions
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
@@ -81,7 +91,7 @@
                     )
                     Icon(
                         imageVector = if (isFavorite.value) Icons.Filled.Favorite else Icons.Default.BookmarkBorder,
-                        contentDescription = "Guardar",
+                        contentDescription = "Guardar como favorita",
                         modifier = Modifier.clickable {
                             authViewModel.toggleFavorite(ruta.nombre)
                             isFavorite.value = authViewModel.isFavorite(ruta.nombre)
@@ -89,75 +99,72 @@
                         tint = Color.Red
                     )
                 }
-            }
 
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(cardBackgroundColor, RoundedCornerShape(12.dp))
-                        .padding(12.dp)
-                ) {
-                    Column {
-                        Text(
-                            text = ruta.nombre,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            color = primaryTextColor
-                        )
-                        Text(
-                            text = "Precio: $${ruta.costoPasaje}",
-                            color = secondaryTextColor
-                        )
-                    }
-                }
-            }
+                Spacer(Modifier.height(20.dp))
 
-            item {
+                // Información principal de la ruta
                 Text(
-                    text = "Detalles de la ruta:",
+                    text = ruta.nombre,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
+                    fontSize = 22.sp,
                     color = primaryTextColor
                 )
-            }
 
-            item {
+                Spacer(Modifier.height(8.dp))
+
                 Text(
-                    text = "Ruta: ${ruta.ruta}",
+                    text = "Costo del pasaje: $${ruta.costoPasaje}",
+                    fontSize = 16.sp,
                     color = secondaryTextColor
                 )
-            }
 
-            item {
+                Spacer(Modifier.height(12.dp))
+
+                // Detalle del recorrido
                 Text(
-                    text = "Paradas:",
+                    text = "Recorrido",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
+                    fontSize = 18.sp,
                     color = primaryTextColor
                 )
-            }
-
-            items(ruta.paradas) { parada ->
                 Text(
-                    text = "- ${parada.nombre}",
-                    color = secondaryTextColor,
-                    fontSize = 14.sp
+                    text = ruta.ruta,
+                    fontSize = 14.sp,
+                    color = secondaryTextColor
                 )
-            }
 
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(240.dp)
-                        .background(
-                            if (isDarkMode) Color.DarkGray else Color.LightGray,
-                            RoundedCornerShape(12.dp)
-                        )
-                ) {
-                    KMLMapWithIdaRegresoPolylines(kmlText = ruta.mapa)
+                Spacer(Modifier.height(16.dp))
+
+                // Paradas
+                Text(
+                    text = "Paradas",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = primaryTextColor
+                )
+
+                Spacer(Modifier.height(4.dp))
+
+                ruta.paradas.forEach { parada ->
+                    Text(
+                        text = "• ${parada.nombre}",
+                        fontSize = 14.sp,
+                        color = secondaryTextColor,
+                        modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
+                    )
                 }
+
+                Spacer(Modifier.height(16.dp))
             }
         }
+    ) {
+        // Mapa de fondo
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(if (isDarkMode) Color.DarkGray else Color.LightGray)
+        ) {
+            KMLMapWithIdaRegresoPolylines(kmlText = ruta.mapa)
+        }
     }
+}
