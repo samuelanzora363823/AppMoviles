@@ -8,6 +8,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -17,8 +18,7 @@ import com.example.MiBusito.ui.screens.ProfileScreen
 import com.example.MiBusito.ui.theme.MovilesAppTheme
 import com.example.MiBusito.viewmodels.AuthViewModel
 import kotlinx.coroutines.delay
-
-
+import com.example.MiBusito.viewModel.HomeScreenVM
 
 @Composable
 fun NavGraph(
@@ -27,6 +27,9 @@ fun NavGraph(
     onToggleDarkMode: (Boolean) -> Unit,
     authViewModel: AuthViewModel
 ) {
+    // Obtén el ViewModel de la pantalla principal
+    val homeViewModel: HomeScreenVM = viewModel()
+
     MovilesAppTheme(darkTheme = isDarkMode) {
         NavHost(
             navController = navController,
@@ -38,7 +41,7 @@ fun NavGraph(
                 LaunchedEffect(Unit) {
                     if (!alreadyRedirected.value) {
                         alreadyRedirected.value = true
-                        delay(2000) // Espera 2 segundos para mostrar splash
+                        delay(2000)
                         navController.navigate("home") {
                             popUpTo("splash") { inclusive = true }
                         }
@@ -54,7 +57,23 @@ fun NavGraph(
             }
 
             composable("home") {
-                HomeScreen(isDarkMode = isDarkMode, navController = navController)
+                HomeScreen(
+                    isDarkMode = isDarkMode,
+                    navController = navController,
+                    rutas = homeViewModel.rutas.collectAsState().value,
+                    rutasDetalle = emptyList()
+                )
+            }
+
+
+            composable("favorites") {
+                val rutas by homeViewModel.rutas.collectAsState()
+                FavoriteRoutesScreen(
+                    authViewModel = authViewModel,
+                    isDarkMode = isDarkMode,
+                    navController = navController,
+                    allRutas = rutas
+                )
             }
 
             composable("login") {
@@ -91,7 +110,7 @@ fun NavGraph(
                     },
                     onBackClick = {
                         navController.popBackStack()
-                    },
+                    }
                 )
             }
 
@@ -102,13 +121,6 @@ fun NavGraph(
                     onBackClick = { navController.popBackStack() },
                     isDarkMode = isDarkMode,
                     authViewModel = authViewModel
-                )
-            }
-
-            composable("favorites") {
-                FavoriteRoutesScreen(
-                    authViewModel = authViewModel,
-                    isDarkMode = isDarkMode
                 )
             }
 

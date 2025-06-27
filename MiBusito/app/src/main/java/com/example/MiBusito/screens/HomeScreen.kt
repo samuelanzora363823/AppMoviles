@@ -16,22 +16,43 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.MiBusito.viewModel.HomeScreenVM
+import com.example.MiBusito.model.Ruta
+import com.example.MiBusito.model.RutaDetalle
 
 @Composable
 fun HomeScreen(
     isDarkMode: Boolean,
     navController: NavHostController,
-    viewModel: HomeScreenVM = viewModel()
+    rutas: List<Ruta>,
+    rutasDetalle: List<RutaDetalle> = emptyList()  // Valor por defecto para evitar errores
 ) {
-    val rutas by viewModel.rutas.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
 
-    val filteredRutas = rutas.filter {
-        it.nombre.contains(searchQuery, ignoreCase = true)
+    // Mapa para acceso rápido a RutaDetalle por id
+    val rutasDetalleMap = remember(rutasDetalle) {
+        rutasDetalle.associateBy { it.id }
     }
+
+    // Filtrado flexible buscando en TODO:
+    val filteredRutas = rutas.filter { ruta ->
+        val query = searchQuery.trim().lowercase()
+
+        // Busca en nombre y ruta de Ruta
+        val matchNombre = ruta.nombre.lowercase().contains(query)
+        val matchRuta = ruta.ruta.lowercase().contains(query)
+
+        // Busca en las paradas asociadas a la ruta (si existen)
+        val matchParada = rutasDetalleMap[ruta.id]?.paradas?.any { parada ->
+            parada.nombre.lowercase().contains(query)
+        } ?: false
+
+        // Aquí puedes agregar más campos si quieres (descripción, observaciones, etc.)
+
+        // Retorna true si coincide en cualquiera de los campos
+        query.isEmpty() || matchNombre || matchRuta || matchParada
+    }
+
 
     Column(
         modifier = Modifier
@@ -52,11 +73,10 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Barra de búsqueda funcional
         TextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            placeholder = { Text("Buscar rutas") },
+            placeholder = { Text("Buscar rutas, recorrido o paradas") },
             singleLine = true,
             colors = TextFieldDefaults.colors(
                 unfocusedContainerColor = if (isDarkMode) Color.DarkGray else Color(0xFFF5F5F5),
@@ -83,14 +103,14 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (rutas.isEmpty()) {
+        if (filteredRutas.isEmpty()) {
             Text(
-                text = "Cargando rutas...",
+                text = "No se encontraron rutas.",
                 color = if (isDarkMode) Color.White else Color.Black,
                 modifier = Modifier.padding(20.dp)
             )
         } else {
-            LazyColumn(
+            androidx.compose.foundation.lazy.LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxSize()
             ) {

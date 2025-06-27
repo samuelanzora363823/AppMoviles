@@ -2,7 +2,6 @@ package com.example.MiBusito.viewmodels
 import kotlinx.coroutines.flow.asStateFlow
 
 import android.app.Application
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.MiBusito.data.UserPreferences
