@@ -7,6 +7,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.google.android.gms.maps.model.*
 import com.google.maps.android.compose.*
+import com.google.android.gms.maps.model.LatLng
+import android.location.Location
 
 
 // --- MAPA CON KML PARSEADO ---
@@ -101,13 +103,40 @@ fun parseKmlWithStops(kml: String): Triple<List<List<LatLng>>, List<List<LatLng>
                                 if (parts.size >= 2) {
                                     val lon = parts[0].toDoubleOrNull()
                                     val lat = parts[1].toDoubleOrNull()
-                                    if (lat != null && lon != null) {
+
+                                    if (lat != null && lon != null &&
+                                        lat in -90.0..90.0 && lon in -180.0..180.0
+                                    ) {
                                         val latLng = LatLng(lat, lon)
+
                                         if (isPoint) {
                                             paradas.add(Pair(latLng, currentName ?: "Parada"))
                                         } else {
+                                            // Validar que el salto entre puntos no sea mayor a 3 km
+                                            currentRoute?.let {
+                                                if (it.isNotEmpty()) {
+                                                    val last = it.last()
+                                                    val results = FloatArray(1)
+                                                    Location("").apply {
+                                                        latitude = last.latitude
+                                                        longitude = last.longitude
+                                                    }.distanceTo(
+                                                        Location("").apply {
+                                                            latitude = latLng.latitude
+                                                            longitude = latLng.longitude
+                                                        }
+                                                    ).also { dist -> results[0] = dist }
+
+                                                    if (results[0] > 3_000f) {
+                                                        Log.w("KML", "Salto >3km ignorado en ruta '${currentName}': $latLng")
+                                                        return@forEach
+                                                    }
+                                                }
+                                            }
                                             currentRoute?.add(latLng)
                                         }
+                                    } else {
+                                        Log.w("KMLParser", "Coordenada inválida ignorada: $coord")
                                     }
                                 }
                             }
@@ -120,12 +149,14 @@ fun parseKmlWithStops(kml: String): Triple<List<List<LatLng>>, List<List<LatLng>
                         insidePlacemark = false
                         isPoint = false
                         currentRoute?.let {
-                            if (it.isNotEmpty()) {
+                            if (it.isNotEmpty() && it.size < 5000) {
                                 when (currentRouteType) {
                                     "ida" -> rutasIda.add(it)
                                     "regreso" -> rutasRegreso.add(it)
                                     else -> rutasIda.add(it)
                                 }
+                            } else {
+                                Log.w("KMLParser", "Ruta descartada (${currentName ?: "Sin nombre"}) por exceso de puntos o estar vacía")
                             }
                         }
                         currentRoute = null
@@ -142,4 +173,3 @@ fun parseKmlWithStops(kml: String): Triple<List<List<LatLng>>, List<List<LatLng>
 
     return Triple(rutasIda, rutasRegreso, paradas)
 }
-

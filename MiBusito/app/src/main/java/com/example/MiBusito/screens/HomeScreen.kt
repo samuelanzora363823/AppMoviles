@@ -40,13 +40,13 @@ fun HomeScreen(
             .padding(20.dp)
     ) {
         Text(
-            text = "Hi👋",
+            text = "Bienvenido!",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = if (isDarkMode) Color.White else Color.Black
         )
         Text(
-            text = "Explora El Salvador",
+            text = "Explora San Salvador \uD83C\uDDF8\uD83C\uDDFB",
             color = if (isDarkMode) Color.Gray else Color.DarkGray
         )
 

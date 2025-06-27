@@ -221,13 +221,6 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        TextButton(
-            onClick = { /* Acción para olvidó contraseña */ },
-            modifier = Modifier.align(Alignment.End)
-        ) {
-            Text("¿Olvidaste tu contraseña?", color = primaryColor, fontSize = 12.sp)
-        }
-
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
@@ -255,15 +248,16 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Row(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text("¿No tienes una cuenta? ", color = hintColor)
             TextButton(onClick = onRegisterClick) {
                 Text("Regístrate", color = primaryColor)
             }
         }
+
     }
 }
 
