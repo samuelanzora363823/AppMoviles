@@ -67,14 +67,6 @@ fun RouteDetailScreen(
                     .verticalScroll(scrollState)
                     .padding(16.dp)
             ) {
-                // Top handle
-                Box(
-                    Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .size(width = 40.dp, height = 4.dp)
-                        .background(Color.Gray, RoundedCornerShape(2.dp))
-                )
-
                 Spacer(Modifier.height(16.dp))
 
                 // Header actions
