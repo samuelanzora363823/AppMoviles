@@ -2,7 +2,7 @@ package com.example.MiBusito
 
 object Constants {
     //false = produccion
-    const val IS_RELEASE = false
+    const val IS_RELEASE = true
 
     val BANNER_AD_UNIT_ID: String
         get() = if (IS_RELEASE) {

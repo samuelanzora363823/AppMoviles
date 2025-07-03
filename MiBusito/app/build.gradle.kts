@@ -1,13 +1,11 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-
-    // Firebase
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
-
-    // Compose Compiler para Kotlin 2.0
-    id("org.jetbrains.kotlin.plugin.compose")
 }
+
 
 android {
     namespace = "com.example.MiBusito"
@@ -80,6 +78,8 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
+    //Serializacion
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     // Compose UI
     implementation(platform("androidx.compose:compose-bom:2023.10.01"))
     implementation("androidx.compose.ui:ui")
