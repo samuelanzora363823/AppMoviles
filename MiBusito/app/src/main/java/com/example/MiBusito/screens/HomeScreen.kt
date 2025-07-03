@@ -25,7 +25,7 @@ fun HomeScreen(
     isDarkMode: Boolean,
     navController: NavHostController,
     rutas: List<Ruta>,
-    rutasDetalle: List<RutaDetalle> = emptyList()  // Valor por defecto para evitar errores
+    rutasDetalle: List<RutaDetalle> = emptyList()
 ) {
     var searchQuery by remember { mutableStateOf("") }
 
@@ -34,25 +34,22 @@ fun HomeScreen(
         rutasDetalle.associateBy { it.id }
     }
 
-    // Filtrado flexible buscando en TODO:
+    // Búsqueda por nombre, recorrido, paradas y XML del mapa
     val filteredRutas = rutas.filter { ruta ->
         val query = searchQuery.trim().lowercase()
 
-        // Busca en nombre y ruta de Ruta
-        val matchNombre = ruta.nombre.lowercase().contains(query)
-        val matchRuta = ruta.ruta.lowercase().contains(query)
+        val detalle = rutasDetalleMap[ruta.id]
+        val paradasXml = extraerParadasDesdeMapa(ruta.mapa)
 
-        // Busca en las paradas asociadas a la ruta (si existen)
-        val matchParada = rutasDetalleMap[ruta.id]?.paradas?.any { parada ->
-            parada.nombre.lowercase().contains(query)
-        } ?: false
+        val fullSearchText = buildString {
+            append(ruta.nombre.lowercase()).append(" ")
+            append(ruta.ruta.lowercase()).append(" ")
+            detalle?.paradas?.forEach { append(it.nombre.lowercase()).append(" ") }
+            paradasXml.forEach { append(it.lowercase()).append(" ") }
+        }
 
-        // Aquí puedes agregar más campos si quieres (descripción, observaciones, etc.)
-
-        // Retorna true si coincide en cualquiera de los campos
-        query.isEmpty() || matchNombre || matchRuta || matchParada
+        query.isEmpty() || fullSearchText.contains(query)
     }
-
 
     Column(
         modifier = Modifier
@@ -67,7 +64,7 @@ fun HomeScreen(
             color = if (isDarkMode) Color.White else Color.Black
         )
         Text(
-            text = "Explora San Salvador \uD83C\uDDF8\uD83C\uDDFB",
+            text = "Explora San Salvador 🇸🇻",
             color = if (isDarkMode) Color.Gray else Color.DarkGray
         )
 
@@ -110,7 +107,7 @@ fun HomeScreen(
                 modifier = Modifier.padding(20.dp)
             )
         } else {
-            androidx.compose.foundation.lazy.LazyColumn(
+            LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -128,14 +125,44 @@ fun HomeScreen(
                                 navController.navigate("routeDetail/${ruta.id}")
                             }
                     ) {
-                        Text(
-                            text = ruta.nombre,
-                            color = if (isDarkMode) Color.White else Color.Black,
-                            fontWeight = FontWeight.Medium
-                        )
+                        Column {
+                            Text(
+                                text = ruta.nombre,
+                                color = if (isDarkMode) Color.White else Color.Black,
+                                fontWeight = FontWeight.Medium
+                            )
+
+                            // Mostrar texto si coincidió con alguna parada
+                            if (
+                                searchQuery.isNotEmpty() &&
+                                (
+                                        rutasDetalleMap[ruta.id]?.paradas?.any {
+                                            it.nombre.contains(searchQuery, ignoreCase = true)
+                                        } == true ||
+                                                extraerParadasDesdeMapa(ruta.mapa).any {
+                                                    it.contains(searchQuery, ignoreCase = true)
+                                                }
+                                        )
+                            ) {
+                                Text(
+                                    text = "Coincide con una parada",
+                                    fontSize = 12.sp,
+                                    color = Color.Gray
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
     }
+}
+
+/**
+ * Extrae los nombres de paradas desde un String XML (KML)
+ * buscando etiquetas <name>...</name>
+ */
+fun extraerParadasDesdeMapa(xml: String): List<String> {
+    val regex = Regex("<name>(.*?)</name>")
+    return regex.findAll(xml).map { it.groupValues[1].trim() }.toList()
 }
