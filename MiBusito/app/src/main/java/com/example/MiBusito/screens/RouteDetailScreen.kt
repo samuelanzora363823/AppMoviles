@@ -175,7 +175,7 @@ fun RouteDetailScreen(
                         cursorColor = primaryTextColor
                     )
                 )
-    
+
 
 
                 Spacer(Modifier.height(8.dp))
