@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +36,11 @@ fun ProfileScreen(
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
     val user by authViewModel.firebaseUser.collectAsState()
     val hasNavigated = remember { mutableStateOf(false) }
+
+    // Estado para controlar si el usuario eliminó anuncios (simulado)
+    var hasAdsRemoved by rememberSaveable { mutableStateOf(false) }
+    // Estado para mostrar el diálogo de simulación de pago
+    var showPayDialog by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(isLoggedIn) {
         if (!isLoggedIn && !hasNavigated.value) {
@@ -84,6 +90,7 @@ fun ProfileScreen(
                         }
                     }
                 }) {
+                    // Puedes poner un ícono aquí si quieres
                 }
             }
 
@@ -154,15 +161,48 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-
             ProfileDetailItem(
                 icon = Icons.Default.Email,
                 label = currentUser.email ?: "Correo no disponible",
                 isDarkMode = isDarkMode
             )
 
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Texto estado de anuncios
+            Text(
+                text = if (hasAdsRemoved) "✅ ¡Gracias por eliminar los anuncios!" else "🚫 Los anuncios están activados.",
+                color = if (hasAdsRemoved) Color(0xFF66BB6A) else Color.Red,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Botón para simular pago
+            Button(
+                onClick = {
+                    if (!hasAdsRemoved) {
+                        showPayDialog = true
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                enabled = !hasAdsRemoved,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isDarkMode) Color(0xFF4CAF50) else Color(0xFF388E3C)
+                )
+            ) {
+                Text(
+                    text = if (hasAdsRemoved) "Anuncios eliminados" else "Eliminar anuncios (Simulado)",
+                    color = Color.White
+                )
+            }
+
             Spacer(modifier = Modifier.weight(1f))
 
+            // Botón cerrar sesión
             Button(
                 onClick = {
                     hasNavigated.value = false
@@ -177,6 +217,34 @@ fun ProfileScreen(
             ) {
                 Text("Cerrar sesión", color = Color.White)
             }
+        }
+
+        // Diálogo de simulación de pago
+        if (showPayDialog) {
+            AlertDialog(
+                onDismissRequest = { showPayDialog = false },
+                title = { Text("Simulación de compra") },
+                text = { Text("¿Quieres simular el pago para eliminar los anuncios?") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            hasAdsRemoved = true
+                            showPayDialog = false
+                        }
+                    ) {
+                        Text("Pagar")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showPayDialog = false
+                        }
+                    ) {
+                        Text("Cancelar")
+                    }
+                }
+            )
         }
     } else {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

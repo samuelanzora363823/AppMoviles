@@ -1,6 +1,7 @@
 package com.example.MiBusito
 
 import android.os.Bundle
+import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -18,7 +19,7 @@ import com.example.MiBusito.ui.theme.MovilesAppTheme
 import com.example.MiBusito.viewmodels.AuthViewModel
 import com.google.android.gms.ads.MobileAds
 import com.google.firebase.FirebaseApp
-
+import androidx.core.view.WindowCompat
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,6 +27,20 @@ class MainActivity : ComponentActivity() {
 
         FirebaseApp.initializeApp(this)
         MobileAds.initialize(this)
+
+        // Pantalla completa (modo inmersivo)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        @Suppress("DEPRECATION")
+        window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                )
+
         enableEdgeToEdge()
 
         setContent {
