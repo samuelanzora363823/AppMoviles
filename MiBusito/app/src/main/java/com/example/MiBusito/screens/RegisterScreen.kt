@@ -2,6 +2,7 @@ import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,6 +45,9 @@ fun RegisterScreen(
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var registerError by remember { mutableStateOf<String?>(null) }
+
+    // Estado para manejar la animación de carga
+    var isLoading by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val auth = FirebaseAuth.getInstance()
@@ -100,6 +104,22 @@ fun RegisterScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
+            // Indicador de carga (se muestra cuando isLoading es true)
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.5f)), // Fondo translúcido
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(48.dp),
+                        color = primaryColor
+                    )
+                }
+            }
+
+            // Botón de volver atrás
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Start
@@ -140,26 +160,20 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            Button(
+            // Botón de Google
+            SocialLoginButton(
+                icon = Icons.Outlined.Email,
+                text = "Google",
+                color = Color(0xFFDB4437),
+                modifier = Modifier.fillMaxWidth(),
                 onClick = {
+                    isLoading = true  // Mostrar animación
                     googleSignInClient.signOut().addOnCompleteListener {
                         val signInIntent = googleSignInClient.signInIntent
                         launcher.launch(signInIntent)
                     }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDB4437))
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Email,
-                    contentDescription = "Google",
-                    tint = Color.White,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(Modifier.width(8.dp))
-                Text("Google", color = Color.White, fontSize = 14.sp)
-            }
+                }
+            )
 
             Spacer(Modifier.height(16.dp))
 
@@ -176,6 +190,7 @@ fun RegisterScreen(
         }
 
         item {
+            // Formulario de registro: nombre, correo y contraseña
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
@@ -269,15 +284,18 @@ fun RegisterScreen(
 
             Button(
                 onClick = {
+                    isLoading = true  // Mostrar animación
                     registerError = null
                     authViewModel.register(
                         name = name.trim(),
                         email = email.trim(),
                         password = password,
                         onSuccess = {
+                            isLoading = false  // Detener animación
                             onRegisterSuccess(email.trim(), password)
                         },
                         onError = { error ->
+                            isLoading = false  // Detener animación
                             registerError = error
                         }
                     )
@@ -294,17 +312,16 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            Column(
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalArrangement = Arrangement.Center
             ) {
-                Text("¿Ya tienes una cuenta?", color = hintColor)
-                TextButton(onClick = onLoginClick) {
-                    Text("Inicia sesión", color = primaryColor)
-                }
+                Text(
+                    text = "¿Ya tienes cuenta?",
+                    color = hintColor,
+                    modifier = Modifier.clickable { onLoginClick() }
+                )
             }
-
-            Spacer(Modifier.height(12.dp))
         }
     }
 }
