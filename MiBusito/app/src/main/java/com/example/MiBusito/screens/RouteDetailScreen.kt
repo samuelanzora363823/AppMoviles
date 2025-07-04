@@ -20,6 +20,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.MiBusito.screens.KMLMapWithIdaRegresoPolylines
 import com.example.MiBusito.viewModel.RouteDetailScreenVM
 import com.example.MiBusito.viewmodels.AuthViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,6 +55,10 @@ fun RouteDetailScreen(
     val iconTintColor = if (isDarkMode) Color.White else Color.Black
 
     val scrollState = rememberScrollState()
+
+    // Estado para las reseñas simuladas y el texto del TextField
+    var currentReview by remember { mutableStateOf("") }
+    val reviews = remember { mutableStateListOf<String>() }
 
     BottomSheetScaffold(
         scaffoldState = sheetState,
@@ -144,6 +149,76 @@ fun RouteDetailScreen(
                         color = secondaryTextColor,
                         modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
                     )
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                // Campo para ingresar reseñas
+                Text(
+                    text = "Reseñas",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = primaryTextColor
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = currentReview,
+                    onValueChange = { currentReview = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Escribe tu reseña...", color = secondaryTextColor) },
+                    maxLines = 3,
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = if (isDarkMode) Color.White else Color.Black,
+                        unfocusedBorderColor = secondaryTextColor,
+                        cursorColor = primaryTextColor
+                    )
+                )
+    
+
+
+                Spacer(Modifier.height(8.dp))
+
+                Button(
+                    onClick = {
+                        if (currentReview.isNotBlank()) {
+                            reviews.add(currentReview.trim())
+                            currentReview = ""
+                            scope.launch {
+                                sheetState.bottomSheetState.expand()
+                            }
+                        }
+                    },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text("Enviar")
+                }
+
+                Spacer(Modifier.height(12.dp))
+
+                // Lista de reseñas simuladas
+                if (reviews.isEmpty()) {
+                    Text(
+                        text = "No hay reseñas todavía.",
+                        fontSize = 14.sp,
+                        color = secondaryTextColor
+                    )
+                } else {
+                    reviews.forEachIndexed { index, review ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            colors = CardDefaults.cardColors(containerColor = if (isDarkMode) Color.DarkGray else Color(0xFFF5F5F5))
+                        ) {
+                            Text(
+                                text = review,
+                                modifier = Modifier.padding(12.dp),
+                                color = primaryTextColor
+                            )
+                        }
+                    }
                 }
 
                 Spacer(Modifier.height(16.dp))
